@@ -1,14 +1,33 @@
 const express = require('express');
+const fs = require("fs");
+const { request } = require('http');
+const path = require('path');
+
 
 const app = express();
 
-// const dirname = '/home/sirkartik/vscode/web-dev/';
+app.disable('x-powered-by');
 
-// app.use("/", express.static(dirname + 'product-preview-card-component-main'));
-app.get("/", (req, res) => {
-    console.log(req.ip);
-    res.send(`I got your IP! your Ip address is:${req.ip}`);
+const downloadDir = 'downloadables/'
+const downloadSiteName = path.join(__dirname, "/static/", "/downloadingWebsite/")
+
+
+downloadDirContentList = fs.readdirSync(downloadDir);
+
+
+app.use("/", express.static(downloadSiteName));
+app.get("/downloads", (request, response) => {
+    response.send(downloadDirContentList);
 })
+
+
+app.get("/downloadFile/:filename", (request, response) => {
+
+    filename = request.params.filename;
+    response.download(downloadDir + filename);
+
+})
+
 
 
 app.listen(80, '0.0.0.0', () => { console.log("Listening on port 80"); });

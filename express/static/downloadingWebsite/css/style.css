@@ -1,0 +1,28 @@
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+}
+
+h1 {
+    background-color: rgba(0, 0, 0, 0.473);
+    margin: 0;
+    padding: auto;
+    text-align: center;
+}
+
+#primary {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.473);
+    height: 100%;
+    width: 100%;
+}
+
+a {
+    margin: 10px;
+    text-decoration: none;
+}
