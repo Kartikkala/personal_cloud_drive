@@ -12,7 +12,15 @@ const downloadDir = 'downloadables/'
 const downloadSiteName = path.join(__dirname, "/static/", "/downloadingWebsite/")
 
 
-downloadDirContentList = fs.readdirSync(downloadDir);
+const downloadDirContentList = fs.readdirSync(downloadDir);
+const downloadDirContentSize = [];
+
+
+for (let i = 0; i < downloadDirContentList.length; i++) {
+    let fileStatObj = fs.statSync(path.join(__dirname, downloadDir, `${downloadDirContentList[i]}`));
+    downloadDirContentSize.push((fileStatObj.size / 1048576).toFixed(2));
+}
+console.log(downloadDirContentSize);
 
 
 app.use("/", express.static(downloadSiteName));

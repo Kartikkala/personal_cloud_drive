@@ -2,6 +2,10 @@ const xhr = new XMLHttpRequest();
 let downloadList = [];
 
 xhr.open("GET", "/downloads");
+
+console.log(xhr.readyState);
+xhr.send()
+console.log(xhr.readyState);
 xhr.onload = () => {
     downloadList = xhr.response;
     downloadList = JSON.parse(downloadList);
