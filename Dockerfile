@@ -6,14 +6,16 @@ RUN apt upgrade -y
 
 COPY . .
 
-RUN ls
-
 RUN apt install nodejs -y
+
+RUN apt install npm -y
+
+RUN npm i
 
 EXPOSE 80
 
 RUN mkdir downloadables
 
-VOLUME ["./downloadables", "./volume"]
+VOLUME ["./downloadables", "./volume1"]
 
 CMD ["node", "app.js"]
