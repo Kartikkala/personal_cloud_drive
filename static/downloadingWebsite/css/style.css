@@ -41,6 +41,14 @@ body {
     max-height: 100%;
 }
 
+.fileNameDiv{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow:clip;
+    display: flex;
+    vertical-align: middle;
+}
+
 .fileItems{
     display: flex;
     width: 95%;

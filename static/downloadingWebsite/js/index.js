@@ -1,6 +1,12 @@
 const xhr = new XMLHttpRequest();
 let downloadList = [];
 
+function getDeviceScreenWidth()
+{
+    let width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    return width;
+}
+
 function addTextLink(url, linkContent, className, elementId)
 {
     let newLink = document.createElement("a");
@@ -72,17 +78,51 @@ function addImageWithURL(imageUrl, redirectionUrl, imageClassName, redirectionUr
     return link;
 }
 
-function addFileObject(listItem, parentDiv)
+function clipFilename(fileName, maxCharacters=16, numberOfCharactersAtStart=10,numberOfCharactersAtEnd=10)
+{
+    return new Promise((resolve)=>
+    {
+        let len = fileName.length;
+        const newName = new Array;
+        if(len >maxCharacters)
+        {
+            for(let i=0;i<len;i++)
+            {
+                if(i>=numberOfCharactersAtStart && i<len-numberOfCharactersAtEnd)
+                {
+                    if(i<numberOfCharactersAtStart+3)
+                    {
+                        newName.push('.');
+                    }
+                    continue;
+                }
+                newName.push(fileName[i]);
+            }
+            resolve(newName.join(""));
+        }
+    resolve(fileName);
+})
+}
+
+async function addFileObject(listItem, parentDiv)
 {
     let downloadUrl = "downloadFile" + "/" + listItem;
     let newFileItem = addDivision('fileItems');
+    let fileNameDiv = addDivision('fileNameDiv');
     let fileActions = addDivision('actionBar');
 
     let buttonIcon = addImageWithURL("../assets/icons/download.png", downloadUrl, 'actionButton');
-    let newLink = addTextLink(downloadUrl, listItem, 'bodyText');
+    let fileName = listItem;
+    
+    if(getDeviceScreenWidth()<=480)
+    {
+        fileName = await clipFilename(listItem, 16, 24, 10);
+    }
+    let newLink = addTextLink(downloadUrl, fileName, 'bodyText');
 
     fileActions.appendChild(buttonIcon);
-    newFileItem.appendChild(newLink);
+    newFileItem.appendChild(fileNameDiv);
+    fileNameDiv.appendChild(newLink);
     newFileItem.append(fileActions);
 
     parentDiv.appendChild(newFileItem);
