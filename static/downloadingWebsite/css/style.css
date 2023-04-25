@@ -1,26 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Bruno+Ace+SC&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bruno+Ace+SC&family=Poppins&display=swap');
+
 html {
     height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 body {
+    --primary-background-color: #2F3C7E;
+    --secondary-background-color: #FBEAEB;
+    margin: 0;
+    padding: 0;
     height: 100%;
+    background-color: var(--primary-background-color);
 }
 
-h1 {
-    background-color: rgba(0, 0, 0, 0.473);
-    margin: 0;
-    padding: auto;
-    text-align: center;
+.primaryHeader{
+    display: flex;
+}
+
+#folderNavigation{
+    margin:auto;
+    margin-right: 2rem;
 }
 
 #primary {
-    margin: 0;
+    font-family: 'Bruno Ace SC', cursive;
+    font-family: 'Poppins', sans-serif;
+    margin-left: 1rem;
+    margin-right: 1rem;
     display: flex;
     flex-direction: column;
-    background-color: rgba(0, 0, 0, 0.473);
-    height: 100%;
-    width: 100%;
+    background-color:var(--secondary-background-color);
+    height: 90%;
+    width: 98.5%;
+    border-radius: 10px;
+    align-items: center;
 }
+
+.fileItems{
+    display: flex;
+    width: 95%;
+    background-color: rgb(0, 0, 0);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    justify-content: space-between;
+}
+
+.actionBar{
+    display: flex;
+}
+
+.navButton{
+    height: 30px;
+    width: 30px;
+    filter: invert(100%);
+    transition-duration: 220ms;
+    vertical-align: middle;
+}
+
+.actionButton{
+    height: 30px;
+    width: 30px;
+    filter: invert(100%);
+    transition-duration: 220ms;
+    vertical-align: middle;
+}
+
+.actionButton:hover{
+    filter:invert(50%);
+}
+
+
+
+.bodyText{
+    color: white;
+}
+
+
+.navButton:hover{
+    filter: invert(50%);
+}
+
+
+.primaryHeadings{
+    font-family: 'Bruno Ace SC', cursive;
+    margin: 0;
+    width:50%;
+    padding-top :1rem;
+    padding-bottom :1rem;
+    padding-left: 2rem;
+    color: white;
+}
+
 
 a {
     margin: 10px;
