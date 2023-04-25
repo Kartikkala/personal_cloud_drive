@@ -2,8 +2,6 @@ const express = require('express');
 const fs = require("fs");
 const { request } = require('http');
 const path = require('path');
-
-
 const app = express();
 
 app.disable('x-powered-by');

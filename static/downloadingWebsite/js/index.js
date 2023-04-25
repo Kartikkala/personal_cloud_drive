@@ -72,7 +72,7 @@ function addImageWithURL(imageUrl, redirectionUrl, imageClassName, redirectionUr
     return link;
 }
 
-function addFileObject(listItem)
+function addFileObject(listItem, parentDiv)
 {
     let downloadUrl = "downloadFile" + "/" + listItem;
     let newFileItem = addDivision('fileItems');
@@ -85,8 +85,7 @@ function addFileObject(listItem)
     newFileItem.appendChild(newLink);
     newFileItem.append(fileActions);
 
-    const existingDiv = document.getElementById("primary");
-    existingDiv.appendChild(newFileItem);
+    parentDiv.appendChild(newFileItem);
 }
 
 xhr.open("GET", "/downloads");
@@ -94,9 +93,9 @@ xhr.send()
 xhr.onload = () => {
     downloadList = xhr.response;
     downloadList = JSON.parse(downloadList);
-
+    const existingDiv = document.getElementById("primary");
     for (let i = 0; i < downloadList.length; i++) {
-        addFileObject(downloadList[i]);
+        addFileObject(downloadList[i], existingDiv);
     }
 }
 
