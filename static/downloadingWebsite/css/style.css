@@ -39,6 +39,7 @@ body {
     align-items: center;
     height: 85vh;
     max-height: 100%;
+    overflow: auto;
 }
 
 .fileNameDiv{
@@ -46,6 +47,19 @@ body {
     white-space: nowrap;
     text-overflow:clip;
     display: flex;
+    vertical-align: middle;
+    min-width: 70%;
+    max-width: 70%;
+}
+
+.fileSizeDiv{
+
+    display: table;
+    color: white;
+}
+
+.textDiv{
+    display: table-cell;
     vertical-align: middle;
 }
 
