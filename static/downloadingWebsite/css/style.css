@@ -47,6 +47,19 @@ body {
     text-overflow:clip;
     display: flex;
     vertical-align: middle;
+    min-width: 80%;
+    max-width: 80%;
+}
+
+.fileSizeDiv{
+
+    display: table;
+    color: white;
+}
+
+.textDiv{
+    display: table-cell;
+    vertical-align: middle;
 }
 
 .fileItems{

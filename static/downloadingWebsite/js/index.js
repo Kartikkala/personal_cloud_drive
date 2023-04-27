@@ -109,7 +109,12 @@ async function addFileObject(listItem, parentDiv)
     let downloadUrl = "downloadFile" + "/" + listItem;
     let newFileItem = addDivision('fileItems');
     let fileNameDiv = addDivision('fileNameDiv');
+    let newTextDiv = addDivision('textDiv');
+    let fileSizeDiv = addDivision('fileSizeDiv');
     let fileActions = addDivision('actionBar');
+
+    fileSizeDiv.appendChild(newTextDiv);
+    newTextDiv.appendChild(document.createTextNode("Size: "));
 
     let buttonIcon = addImageWithURL("../assets/icons/download.png", downloadUrl, 'actionButton');
     let fileName = listItem;
@@ -121,8 +126,9 @@ async function addFileObject(listItem, parentDiv)
     let newLink = addTextLink(downloadUrl, fileName, 'bodyText');
 
     fileActions.appendChild(buttonIcon);
-    newFileItem.appendChild(fileNameDiv);
     fileNameDiv.appendChild(newLink);
+    newFileItem.appendChild(fileNameDiv);
+    newFileItem.appendChild(fileSizeDiv);
     newFileItem.append(fileActions);
 
     parentDiv.appendChild(newFileItem);
@@ -134,8 +140,9 @@ xhr.onload = () => {
     downloadList = xhr.response;
     downloadList = JSON.parse(downloadList);
     const existingDiv = document.getElementById("primary");
-    for (let i = 0; i < downloadList.length; i++) {
-        addFileObject(downloadList[i], existingDiv);
+    for(file in downloadList)
+    {
+        addFileObject(file, existingDiv);
     }
 }
 
