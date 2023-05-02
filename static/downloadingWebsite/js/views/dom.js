@@ -1,5 +1,6 @@
 import {text} from '../utils/textUtils.js'
 import { screen } from '../utils/screen.js';
+import { statParser } from '../utils/fileStatParser.js';
 export const addElements = {
     addTextLink(url, linkContent, className, elementId)
     {
@@ -71,7 +72,7 @@ export const addElements = {
         link.appendChild(image);
         return link;
     },
-    async addFileObject(listItem, parentDiv)
+    async addFileObject(listItem, listItemStats,parentDiv)
     {
         let downloadUrl = "downloadFile" + "/" + listItem;
         let newFileItem = this.addDivision('fileItems');
@@ -79,13 +80,23 @@ export const addElements = {
         let newTextDiv = this.addDivision('textDiv');
         let fileSizeDiv = this.addDivision('fileSizeDiv');
         let fileActions = this.addDivision('actionBar');
-
-        fileSizeDiv.appendChild(newTextDiv);
-        newTextDiv.appendChild(document.createTextNode("Size: "));
-
         let buttonIcon = this.addImageWithURL("../assets/icons/download.png", downloadUrl, 'actionButton');
         let fileName = listItem;
+        let fileSize = statParser.getFileSizeinMB(listItemStats);
+        fileSizeDiv.appendChild(newTextDiv);
+    
+        if(fileSize>1024)
+        {
+            fileSize = statParser.convertMBtoGB(fileSize);
+            newTextDiv.appendChild(document.createTextNode(`Size: ${fileSize} GB`));
+        }
+        else
+        {
+            newTextDiv.appendChild(document.createTextNode(`Size: ${fileSize} MB`));
+        }
 
+        
+    
         if(screen.getDeviceScreenWidth()<=480)
         {
             fileName = await text.clipText(listItem, 16, 24, 10);
@@ -99,5 +110,6 @@ export const addElements = {
         newFileItem.append(fileActions);
 
         parentDiv.appendChild(newFileItem);
+        return newFileItem;
     }
 }    

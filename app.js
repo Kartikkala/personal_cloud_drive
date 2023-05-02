@@ -1,6 +1,5 @@
 const express = require('express');
 const fs = require("fs");
-const { request } = require('http');
 const path = require('path');
 const app = express();
 
@@ -154,6 +153,7 @@ app.use("/", express.static(downloadSiteName));
 app.get("/downloads", (request, response) => {
     fileObject.getFileStatsInDirectory().then((statObject)=>
     {
+        // let responseString = JSON.stringify(statObject);
         response.send(statObject);
     })
     .catch((error)=>{
