@@ -10,7 +10,7 @@ To get started with the project, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/Kartikkala/mirror_website.git`
 2. Install Docker on your machine if you haven't already: https://www.docker.com/get-started
-3. Navigate to the project directory: `cd your-project`
+3. Navigate to the project directory: `cd mirror_website`
 4. Run `docker build -t <image_name> . --no-cache` command to build the image with your preffered `image_name`.
 5. Run `docker run -p 80:80 -d --mount type=bind,src=path/to/volume,dst=/downloadables <image_name>` with root previliges (if using linux) where `path/to/volume` is the path from which all the files (videos, pictures or other files ) will be hosted on the website. .
 6. If you are doing this locally, then open localhost in your browser or.
