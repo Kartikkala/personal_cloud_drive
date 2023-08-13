@@ -1,7 +1,7 @@
-const fs = require('fs')
-const path = require('path')
+import fs from 'fs'
+import path from 'path';
 
-class FileManager{
+export class FileManager{
     #targetPath = undefined;
     constructor(path)
     {
@@ -137,5 +137,3 @@ class FileManager{
         }
     }
 }
-
-module.exports = {FileManager}
