@@ -1,10 +1,11 @@
-const fs = require('fs')
-const util = require('util')
-const path = require('path')
-const {Throttle} = require('stream-throttle')
+import fs from 'fs'
+import util from 'util'
+import path from 'path'
+import Aria2 from 'aria2'
+import { Throttle } from 'stream-throttle'
 const statAsync = util.promisify(fs.stat)
 
-class FileTransfer
+export class FileTransfer
 {
     constructor(targetDirectory, maxTransferSpeed)
     {
@@ -24,5 +25,3 @@ class FileTransfer
         return
     }
 }
-
-module.exports = {FileTransfer}

@@ -1,14 +1,17 @@
 // Built in modules
-const express = require('express')
-const path = require('path')
+import express from 'express'
+import path, {dirname} from 'path'
+import { fileURLToPath } from 'url';
 
 // User defined modules
 
-const {FileManager} = require("./scripts/fileSystem/fileSystem.js")
-const {FileTransfer} = require('./scripts/fileTransfer/transfer.js')
+import { FileManager } from './scripts/fileSystem/fileSystem.mjs'
+import { FileTransfer } from './scripts/fileTransfer/transfer.mjs'
 
 // Configurations
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 const frontendApp = path.join(__dirname, "/static/", "/downloadingWebsite/")
 const downloadDirName = 'downloadables'
 const targetVolume = path.join(__dirname, downloadDirName)
