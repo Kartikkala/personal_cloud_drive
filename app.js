@@ -19,7 +19,7 @@ const maxFileTransferSpeed = 8e+7
 
 // Object creations and initializations
 
-const app = express()
+export const app = express()
 const fileTransfer = new FileTransfer(targetVolume, maxFileTransferSpeed)
 const fileObject = new FileManager(targetVolume)
 
@@ -48,4 +48,4 @@ app.get("/downloadFile/:filename", (request, response) => {
 
 
 
-app.listen(80, '0.0.0.0', () => { console.log("Listening on port 80") })
+app.listen(8000, '0.0.0.0', () => { console.log("Listening on port 8000") })
