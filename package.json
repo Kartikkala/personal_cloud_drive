@@ -5,7 +5,7 @@
   "description": "This is the first package I am creating using npm init and express js",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha 'test/*.spec.js'"
   },
   "author": "KartikKala",
   "license": "ISC",
@@ -16,5 +16,10 @@
     "pug": "^3.0.2",
     "stream-throttle": "^0.1.3",
     "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "chai-http": "^4.4.0",
+    "mocha": "^10.2.0"
   }
 }
