@@ -13,13 +13,16 @@ class fileManager{
     #targetPath = undefined;
     setTargetPath(path)
     {
-        if(typeof path == "string" && fs.existsSync(path))
+        this.#targetPath = path;
+        if(!fs.existsSync(path))
         {
-            this.#targetPath = path;
-        }
-        else
-        {
-            console.log("Error!!! Invalid Path...");
+            console.log("Error!!! Invalid Path... Creating new path");
+            fs.mkdir(this.#targetPath, (err)=>{
+                if(err)
+                {
+                    throw new Error(err)
+                }
+            })
         }
         return;
     }
