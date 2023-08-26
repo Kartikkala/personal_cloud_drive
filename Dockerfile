@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM node:16
 
 RUN apt update
 
@@ -6,11 +6,7 @@ RUN apt upgrade -y
 
 COPY . .
 
-RUN apt install nodejs -y
-
-RUN apt install npm -y
-
-RUN npm i
+RUN npm ci
 
 EXPOSE 80
 

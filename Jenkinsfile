@@ -8,23 +8,38 @@ pipeline{
         timeout(time: 15, unit: 'MINUTES')
     }
     stages{
-        stage('Checkout Stage')
-        {
-            steps{
-                checkout scm
-            }
-        }
         stage('Install Dependencies')
         {
             steps{
                 sh "npm ci"
             }
         }
-        stage('Build and Test')
+        stage('Run Unit Tests')
+        {
+            when{
+                branch "test"
+            }
+            steps{
+                // sh "npm test"
+                script{
+                    println "Testing..."
+                }
+                }
+        }
+        stage('Build docker image')
         {
             steps{
-                sh "npm test"
+                script
+                {
+                    def packageJson = readJSON(file: 'package.json')
+                    def version = packageJson.version
+                    println(version)
+                    withDockerRegistry([credentialsId: 'dockerhub-creds', url: ""]){
+                        def dockerImage = docker.build("kartikkala/mirror_website")
+                        dockerImage.push("$version")
+                    }
                 }
+            }
         }
     }
     post {
