@@ -56,7 +56,7 @@ pipeline{
                     withCredentials([sshUserPrivateKey(credentialsId: 'deployment-server-creds', keyFileVariable: 'SSH_PRIVKEY', passphraseVariable: 'SSH_PASS', usernameVariable: 'SSH_USR')]) 
                     {
                         sh "chmod +x docker_pull.sh"
-                        sh './docker_pull.sh $SSH_PRIVKEY $SSH_PASS $SSH_USR $SSH_SERVER_ADDRESS'
+                        sh './docker_pull.sh $SSH_PRIVKEY $SSH_PASS $SSH_USR $SSH_SERVER_ADDRESS $HOME'
                     }
                 }
             }
