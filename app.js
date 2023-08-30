@@ -48,4 +48,4 @@ app.get("/downloadFile/:filename", (request, response) => {
 
 const port = process.env.NODE_ENV === 'test'? 8000 : 80
 
-export const server = app.listen(port, '0.0.0.0', () => { console.log("Listening on port 80...") })
+export const server = app.listen(port, '0.0.0.0', () => { console.log("Listening on port "+port+"...") })
