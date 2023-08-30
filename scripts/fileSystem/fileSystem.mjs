@@ -5,14 +5,13 @@ export class FileManager{
     #targetPath = undefined;
     constructor(path)
     {
-        if(typeof path == "string" && fs.existsSync(path))
+        if(!fs.existsSync(path))
         {
-            this.#targetPath = path;
+            fs.mkdir(path, (err)=>{
+                throw new Error(err)
+            })
         }
-        else
-        {
-            console.log("Error!!! Invalid Path...");
-        }
+        this.#targetPath = path;
         return;
     }
     getTargetPath()

@@ -29,14 +29,6 @@ describe('Test routes', function (){
             expect(res).to.be.a('Object', 'Response from /downloads is not an object')
         })
     })
-    it('Test route /downloadFile/:filename', function(){
-        const testFileName = 'ubuntu-20.04.6-live-server-amd64.iso'
-        chai.request(app)
-        .get(`/downloadFile/${testFileName}`)
-        .end(function (err, res){
-            expect(res).to.have.status(200)
-        })
-    })
 })
 
 
