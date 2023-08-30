@@ -48,6 +48,9 @@ pipeline{
             when{
                 branch "master"
             }
+            environment{
+                SSH_SERVER_ADDRESS = credentials('deployment-server-address')
+            }
             steps{
                 script{
                     withCredentials([sshUserPrivateKey(credentialsId: 'deployment-server-creds', keyFileVariable: 'SSH_PRIVKEY', passphraseVariable: 'SSH_PASS', usernameVariable: 'SSH_USR')]) 

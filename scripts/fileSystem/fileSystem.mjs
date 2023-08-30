@@ -8,7 +8,10 @@ export class FileManager{
         if(!fs.existsSync(path))
         {
             fs.mkdir(path, (err)=>{
-                throw new Error(err)
+                if(err)
+                {
+                    throw new Error(err)
+                }
             })
         }
         this.#targetPath = path;
