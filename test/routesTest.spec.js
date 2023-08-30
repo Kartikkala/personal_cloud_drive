@@ -5,7 +5,13 @@ import {stopServer} from './teardown.js'
 import {app, server} from '../app.js'
 
 after(async ()=>{
-    await stopServer(server)
+    try{
+        await stopServer(server)
+        console.log("Server stopped!!!")
+    }
+    catch(err){
+        console.error(err)
+    }
 })
 
 chai.use(chaiHttp)

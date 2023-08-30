@@ -4,11 +4,9 @@ export function stopServer(server){
             if (err){
                 console.err(err)
                 reject(err)
-                process.exit(-1)
             }
             else{
                 resolve()
-                process.exit(0)
             }
         })
     })

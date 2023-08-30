@@ -6,13 +6,14 @@
   "main": "app.js",
   "scripts": {
     "start": "NODE_ENV=deployment sudo node app.js",
-    "test": "NODE_ENV=test mocha 'test/*.spec.js'"
+    "test": "JUNIT_REPORT_PATH=/report.xml NODE_ENV=test mocha --colors --reporter mocha-jenkins-reporter 'test/*.spec.js'"
   },
   "author": "KartikKala",
   "license": "ISC",
   "dependencies": {
     "aria2": "^4.1.2",
     "express": "^4.18.2",
+    "mocha-jenkins-reporter": "^0.4.8",
     "node-fetch": "^3.3.2",
     "pug": "^3.0.2",
     "stream-throttle": "^0.1.3",
