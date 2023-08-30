@@ -5,7 +5,8 @@
   "description": "This is the first package I am creating using npm init and express js",
   "main": "app.js",
   "scripts": {
-    "test": "mocha 'test/*.spec.js'"
+    "start": "NODE_ENV=deployment sudo node app.js",
+    "test": "NODE_ENV=test mocha 'test/*.spec.js'"
   },
   "author": "KartikKala",
   "license": "ISC",
