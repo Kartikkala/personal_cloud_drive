@@ -1,6 +1,6 @@
 {
   "name": "mfp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "This is the first package I am creating using npm init and express js",
   "main": "app.js",

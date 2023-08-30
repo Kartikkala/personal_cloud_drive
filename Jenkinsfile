@@ -20,14 +20,16 @@ pipeline{
                 branch "test"
             }
             steps{
-                // sh "npm test"
                 script{
-                    println "Testing..."
+                    sh "npm test"
                 }
                 }
         }
-        stage('Build docker image')
+        stage('Build and push docker image on master branch')
         {
+            when{
+                branch "master"
+            }
             steps{
                 script
                 {
@@ -37,6 +39,21 @@ pipeline{
                     withDockerRegistry([credentialsId: 'dockerhub-creds', url: ""]){
                         def dockerImage = docker.build("kartikkala/mirror_website")
                         dockerImage.push("$version")
+                    }
+                }
+            }
+        }
+        stage('Deploy server on master branch')
+        {
+            when{
+                branch "master"
+            }
+            steps{
+                script{
+                    withCredentials([sshUserPrivateKey(credentialsId: 'deployment-server-creds', keyFileVariable: 'SSH_PRIVKEY', passphraseVariable: 'SSH_PASS', usernameVariable: 'SSH_USR')]) 
+                    {
+                        sh "chmod +x docker_pull.sh"
+                        sh './docker_pull.sh $SSH_PRIVKEY $SSH_PASS $SSH_USR $SSH_SERVER_ADDRESS'
                     }
                 }
             }
