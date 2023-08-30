@@ -1,7 +1,12 @@
 import { expect } from "chai"
 import chai from "chai"
 import chaiHttp from "chai-http"
-import {app} from '../app.js'
+import {stopServer} from './teardown.js'
+import {app, server} from '../app.js'
+
+after(async ()=>{
+    await stopServer(server)
+})
 
 chai.use(chaiHttp)
 
