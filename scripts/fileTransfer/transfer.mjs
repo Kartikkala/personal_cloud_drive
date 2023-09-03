@@ -1,14 +1,16 @@
 import fs from 'fs'
 import util from 'util'
 import path from 'path'
-import Aria2 from 'aria2'
+import { Aria2Helper } from './aria2Helper.mjs'
 import { Throttle } from 'stream-throttle'
 const statAsync = util.promisify(fs.stat)
 
-export class FileTransfer
+
+export class FileTransfer extends Aria2Helper
 {
-    constructor(targetDirectory, maxTransferSpeed)
+    constructor(targetDirectory, maxTransferSpeed, aria2cOptions)
     {
+        super(aria2cOptions)
         this.targetDirectory = targetDirectory
         this.transferSpeed = maxTransferSpeed
     }

@@ -1,7 +1,9 @@
 // Built in modules
-import express from 'express'
+import express, {response} from 'express'
 import path, {dirname} from 'path'
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'url'
+import ws from 'ws'
+import nodefetch from 'node-fetch'
 
 // User defined modules
 
@@ -16,20 +18,30 @@ const frontendApp = path.join(__dirname, "/static/", "/downloadingWebsite/")
 const downloadDirName = 'downloadables'
 const targetVolume = path.join(__dirname, downloadDirName)
 const maxFileTransferSpeed = 8e+7
+const aria2cOptions = {
+    WebSocket: ws, fetch: nodefetch, host: 'localhost',
+    port: 6800,
+    secure: false,
+    secret: '',
+    path: '/jsonrpc'
+}
 
 // Object creations and initializations
 
 export const app = express()
-const fileTransfer = new FileTransfer(targetVolume, maxFileTransferSpeed)
+const fileTransfer = new FileTransfer(targetVolume, maxFileTransferSpeed, aria2cOptions)
 const fileObject = new FileManager(targetVolume)
 
 app.disable('x-powered-by')
+app.use(express.json())
 
 // Route handling
 
 app.use("/", express.static(frontendApp))
 
 app.get("/downloads", (request, response) => {
+    // Change this to await
+
     fileObject.getFileStatsInDirectory().then((statObject)=>
     {
         response.send(statObject)
@@ -41,10 +53,63 @@ app.get("/downloads", (request, response) => {
 })
 
 
-app.get("/downloadFile/:filename", (request, response) => {
+app.get("/downloadFileClient/:filename", (request, response) => {
     let filePath = path.join(targetVolume, request.params.filename)
     fileTransfer.downloadFileClient(response, filePath, request.params.filename)
 })
+
+app.post("/downloadFileServer", async (request, response)=>{
+    const {uri} = request.body
+    const guid =  await fileTransfer.downloadWithURI([uri], downloadDirName)
+    if(guid === undefined)
+    {
+        response.status(500).send("<h1>Internal server Error</h1>")
+    }
+    else{
+        response.writeHead(200)
+        response.send({"guid" : guid,
+                        "active": true,
+                        "waiting": false})
+    }
+})
+
+app.get("/cancelDownload/:guid", async (request, response)=>{
+    const guid = request.params.guid
+    if(await fileTransfer.cancelDownload(guid) === undefined)
+    {
+        response.status(500).send("<h1>Internal server Error</h1>")
+    }
+    else{
+        response.send({"guid" : guid,
+                        "active": false,
+                        "waiting": false})
+    }
+})
+
+app.get("/pauseDownload/:guid", async (request, response)=>{
+    const guid = request.params.guid
+    if(await fileTransfer.pauseDownload(guid) === undefined){
+        response.status(500).send("<h1>Internal server Error</h1>")
+    }
+    else{
+        response.send({"guid" : guid,
+                        "active": false,
+                        "waiting": true})
+    }
+})
+
+app.get("/resumeDownload/:guid", async (request, response)=>{
+    const guid = request.params.guid
+    if(await fileTransfer.resumeDownload(guid) === undefined){
+        response.status(500).send("<h1>Internal server Error</h1>")
+    }
+    else{
+        response.send({"guid" : guid,
+                        "active": true,
+                        "waiting": false})
+    }
+})
+
 
 const port = process.env.NODE_ENV === 'test'? 8000 : 80
 

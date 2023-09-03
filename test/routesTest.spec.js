@@ -49,6 +49,41 @@ describe('Test routes', function (){
             }
         })
     })
+
+    it('Test route /downloadFileServer', function(done){
+        chai.request(app)
+        .post('/downloadFileServer')
+        .send({
+            "uri":"http://139.59.77.129/downloadFileClient/ubuntu-22.04.3-desktop-amd64.iso"
+        }
+        )
+        .end(function (err, res){
+            if(err){
+                done(err)
+                throw new Error(err)
+            }
+            else{
+                expect(res).to.have.status(200)
+                expect(res).to.be.a("Object", "Response from /downloadFileServer is not an object")
+                expect(res).to.have.property('active', true, "Response from /downloadFileServer does not have any property 'active'.")
+                done()
+            }
+        })
+    })
+    it('Test route /downloadFileClient', function(done){
+        chai.request(app)
+        .get('/downloadFileClient/ubuntu-22.04.3-desktop-amd64.iso')
+        .end(function (err, res){
+            if(err){
+                done(err)
+                throw new Error(err)
+            }
+            else{
+                expect(res).to.have.status(200)
+                done()
+            }
+        })
+    })
 })
 
 
