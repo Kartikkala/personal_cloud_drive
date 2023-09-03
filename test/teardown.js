@@ -11,3 +11,8 @@ export function stopServer(server){
         })
     })
 }
+
+export async function disconnectAria2(aria2Object)
+{
+    return aria2Object.disconnectAria2()
+}

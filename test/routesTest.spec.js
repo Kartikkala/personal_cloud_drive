@@ -1,13 +1,14 @@
 import { expect } from "chai"
 import chai from "chai"
 import chaiHttp from "chai-http"
-import {stopServer} from './teardown.js'
-import {app, server} from '../app.js'
+import {disconnectAria2, stopServer} from './teardown.js'
+import {app, server, aria2c} from '../app.js'
 
 after(async ()=>{
     try{
         await stopServer(server)
         console.log("Server stopped!!!")
+        await disconnectAria2(aria2c)
     }
     catch(err){
         console.error(err)
