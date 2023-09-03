@@ -8,7 +8,7 @@ COPY . .
 
 RUN apt install aria2 -y
 
-RUN aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all &
+RUN aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all --listen-port=6800 &
 
 RUN npm ci
 
