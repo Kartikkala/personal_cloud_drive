@@ -8,7 +8,7 @@ COPY . .
 
 RUN chmod +x start.sh
 
-RUN apt install aria2 -y
+RUN apt install aria2 sudo -y
 
 RUN npm ci
 
