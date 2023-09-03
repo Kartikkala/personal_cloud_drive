@@ -1,5 +1,5 @@
 // Built in modules
-import express, {response} from 'express'
+import express from 'express'
 import path, {dirname} from 'path'
 import { fileURLToPath } from 'url'
 import ws from 'ws'
@@ -9,6 +9,7 @@ import nodefetch from 'node-fetch'
 
 import { FileManager } from './scripts/fileSystem/fileSystem.mjs'
 import { FileTransfer } from './scripts/fileTransfer/transfer.mjs'
+import {Aria2Helper} from './scripts/fileTransfer/aria2Helper.mjs'
 
 // Configurations
 
@@ -29,6 +30,7 @@ const aria2cOptions = {
 // Object creations and initializations
 
 export const app = express()
+export const aria2c = new Aria2Helper(aria2cOptions)
 const fileTransfer = new FileTransfer(targetVolume, maxFileTransferSpeed, aria2cOptions)
 const fileObject = new FileManager(targetVolume)
 
@@ -60,7 +62,7 @@ app.get("/downloadFileClient/:filename", (request, response) => {
 
 app.post("/downloadFileServer", async (request, response)=>{
     const {uri} = request.body
-    const guid =  await fileTransfer.downloadWithURI([uri], downloadDirName)
+    const guid =  await aria2c.downloadWithURI([uri], downloadDirName)
     if(guid === undefined)
     {
         console.log("Hey, I am in if")
@@ -75,7 +77,7 @@ app.post("/downloadFileServer", async (request, response)=>{
 
 app.get("/cancelDownload/:guid", async (request, response)=>{
     const guid = request.params.guid
-    if(await fileTransfer.cancelDownload(guid) === undefined)
+    if(await aria2c.cancelDownload(guid) === undefined)
     {
         response.status(500).send("<h1>Internal server Error</h1>")
     }
@@ -88,7 +90,7 @@ app.get("/cancelDownload/:guid", async (request, response)=>{
 
 app.get("/pauseDownload/:guid", async (request, response)=>{
     const guid = request.params.guid
-    if(await fileTransfer.pauseDownload(guid) === undefined){
+    if(await aria2c.pauseDownload(guid) === undefined){
         response.status(500).send("<h1>Internal server Error</h1>")
     }
     else{
@@ -100,7 +102,7 @@ app.get("/pauseDownload/:guid", async (request, response)=>{
 
 app.get("/resumeDownload/:guid", async (request, response)=>{
     const guid = request.params.guid
-    if(await fileTransfer.resumeDownload(guid) === undefined){
+    if(await aria2c.resumeDownload(guid) === undefined){
         response.status(500).send("<h1>Internal server Error</h1>")
     }
     else{
