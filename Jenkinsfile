@@ -14,6 +14,12 @@ pipeline{
                 sh "npm ci"
             }
         }
+        stage('Initialize Aria2 client')
+        {
+            steps{
+                sh "aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all &"
+            }
+        }
         stage('Run Unit Tests')
         {
             when{
