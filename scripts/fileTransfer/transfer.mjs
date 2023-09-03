@@ -15,8 +15,10 @@ export class FileTransfer
     }
     async downloadFileClient(response, filePath, suggestedFileName)
     {
+        console.log("File path is: "+filePath)
         let fileStats = await statAsync(filePath)
         let fileSize = fileStats.size
+        console.log("File size in bytes: "+fileSize)
         const throttle = new Throttle({rate: 8e+7})
         const readableStream = fs.createReadStream(filePath, {'highWaterMark': 4e+7})
         let headers = {'Content-Type':'application/octet-stream', 'Content-Disposition':`attachment;filename="${suggestedFileName}"`,'Content-Length':fileSize}

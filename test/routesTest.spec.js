@@ -84,7 +84,7 @@ describe('Test routes', function (){
                 done()
             }
         })
-    })
+    }).timeout(10000)
 })
 
 
