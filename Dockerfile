@@ -6,6 +6,10 @@ RUN apt upgrade -y
 
 COPY . .
 
+RUN apt install aria2 -y
+
+RUN aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all &
+
 RUN npm ci
 
 EXPOSE 80

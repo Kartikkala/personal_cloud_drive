@@ -40,7 +40,7 @@ app.use(express.json())
 app.use("/", express.static(frontendApp))
 
 app.get("/downloads", (request, response) => {
-    // Change this to await
+    // Change this to await 
 
     fileObject.getFileStatsInDirectory().then((statObject)=>
     {
@@ -63,13 +63,13 @@ app.post("/downloadFileServer", async (request, response)=>{
     const guid =  await fileTransfer.downloadWithURI([uri], downloadDirName)
     if(guid === undefined)
     {
+        console.log("Hey, I am in if")
         response.status(500).send("<h1>Internal server Error</h1>")
     }
     else{
-        response.writeHead(200)
         response.send({"guid" : guid,
-                        "active": true,
-                        "waiting": false})
+        "active": true,
+        "waiting": false})
     }
 })
 

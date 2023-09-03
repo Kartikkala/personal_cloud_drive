@@ -54,25 +54,25 @@ describe('Test routes', function (){
         chai.request(app)
         .post('/downloadFileServer')
         .send({
-            "uri":"http://139.59.77.129/downloadFileClient/ubuntu-22.04.3-desktop-amd64.iso"
+            "uri":"http://139.59.77.129:9000/downloadFileClient/test.jar"
         }
         )
         .end(function (err, res){
             if(err){
                 done(err)
-                throw new Error(err)
             }
             else{
                 expect(res).to.have.status(200)
-                expect(res).to.be.a("Object", "Response from /downloadFileServer is not an object")
-                expect(res).to.have.property('active', true, "Response from /downloadFileServer does not have any property 'active'.")
+                expect(res.body).to.be.a("Object", "Response from /downloadFileServer is not an object")
+                expect(res.body).to.have.property("active", true, "Response from /downloadFileServer does not have any property 'active'.")
                 done()
             }
         })
-    })
+    }).timeout(8000)
+
     it('Test route /downloadFileClient', function(done){
         chai.request(app)
-        .get('/downloadFileClient/ubuntu-22.04.3-desktop-amd64.iso')
+        .get('/downloadFileClient/test.jar')
         .end(function (err, res){
             if(err){
                 done(err)
