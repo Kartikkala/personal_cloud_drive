@@ -15,11 +15,21 @@ export class Aria2Helper{
     async connectToAria2(){
         try{
             await this._aria2c.open()
-            console.log("Connection to aria2API successful")
+            console.log("Connection to aria2API successful!!!")
         }
         catch(err){
             console.log("Connection to aria2 API failed!!! Check if aria2 client is running with JSON RPC enabled. Retrying connection in 10 secs...\n")
             setTimeout(()=>this.connectToAria2(), 10000)
+        }
+    }
+    async disconnectAria2(){
+        try{
+            await this._aria2c.close()
+            console.log("Disconnected from Aria2c!!!")
+        }
+        catch(err){
+            console.log("Disconnection from aria2 API failed!!! Check if aria2 client is running with JSON RPC enabled. Retrying connection in 10 secs...\n")
+            // setTimeout(()=>this.disconnectAria2(), 10000)
         }
     }
     async downloadWithURI(uri, downloadPath){
