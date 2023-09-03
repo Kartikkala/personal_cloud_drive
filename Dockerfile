@@ -6,9 +6,9 @@ RUN apt upgrade -y
 
 COPY . .
 
-RUN apt install aria2 -y
+RUN chmod +x start.sh
 
-RUN aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all --disable-ipv6 &
+RUN apt install aria2 -y
 
 RUN npm ci
 
@@ -16,6 +16,6 @@ EXPOSE 80
 
 RUN mkdir downloadables
 
-VOLUME ["./downloadables", "./volume1"]
+VOLUME ["./downloadables"]
 
-CMD ["node", "app.js"]
+CMD ["./start.sh"]
