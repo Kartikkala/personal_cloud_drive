@@ -31,7 +31,44 @@ pipeline{
                 }
                 }
         }
-        stage('Build and push docker image on master branch')
+        stage('Build test image and push to registry')
+        {
+            when{
+                branch "test"
+            }
+            steps{
+                script{
+                    def packageJson = readJSON(file: 'package.json')
+                    def version = packageJson.version
+                    env.VERSION = version
+                    println(version)
+                    withDockerRegistry([credentialsId: 'dockerhub-creds', url: ""]){
+                        def dockerImage = docker.build("kartikkala/mirror_website")
+                        dockerImage.push("$version-test")
+                    }
+                }
+            }
+        }
+        stage('Deploy test image on test server'){
+            when{
+                branch "test"
+            }
+            environment{
+                SSH_SERVER_ADDRESS = credentials('deployment-server-address')
+                BUILD = "test"
+                PORT = 8000
+            }
+            steps{
+                script{
+                    withCredentials([sshUserPrivateKey(credentialsId: 'deployment-server-creds', keyFileVariable: 'SSH_PRIVKEY', passphraseVariable: 'SSH_PASS', usernameVariable: 'SSH_USR')]) 
+                    {
+                        sh "chmod +x docker_pull.sh"
+                        sh './docker_pull.sh $SSH_PRIVKEY $SSH_PASS $SSH_USR $SSH_SERVER_ADDRESS $HOME $BUILD $VERSION $PORT'
+                    }
+                }
+            }
+        }
+        stage('Build and push stable docker image')
         {
             when{
                 branch "master"
@@ -41,28 +78,31 @@ pipeline{
                 {
                     def packageJson = readJSON(file: 'package.json')
                     def version = packageJson.version
+                    env.VERSION = version
                     println(version)
                     withDockerRegistry([credentialsId: 'dockerhub-creds', url: ""]){
                         def dockerImage = docker.build("kartikkala/mirror_website")
-                        dockerImage.push("$version")
+                        dockerImage.push("$version-stable")
                     }
                 }
             }
         }
-        stage('Deploy server on master branch')
+        stage('Deploy stable docker image')
         {
             when{
                 branch "master"
             }
             environment{
                 SSH_SERVER_ADDRESS = credentials('deployment-server-address')
+                BUILD = "stable"
+                PORT = 80
             }
             steps{
                 script{
                     withCredentials([sshUserPrivateKey(credentialsId: 'deployment-server-creds', keyFileVariable: 'SSH_PRIVKEY', passphraseVariable: 'SSH_PASS', usernameVariable: 'SSH_USR')]) 
                     {
                         sh "chmod +x docker_pull.sh"
-                        sh './docker_pull.sh $SSH_PRIVKEY $SSH_PASS $SSH_USR $SSH_SERVER_ADDRESS $HOME'
+                        sh './docker_pull.sh $SSH_PRIVKEY $SSH_PASS $SSH_USR $SSH_SERVER_ADDRESS $HOME $BUILD $VERSION $PORT'
                     }
                 }
             }

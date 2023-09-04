@@ -2,11 +2,16 @@
 
 SSH_CMD="sshpass -P passphrase -p $SSH_PASS ssh $SSH_USR@$SSH_SERVER_ADDRESS -i $SSH_PRIVKEY"
 
-$SSH_CMD docker pull kartikkala/mirror_website:$VERSION
-CONTAINER_ID=$($SSH_CMD docker ps -q --filter "ancestor=kartikkala/mirror_website")
+$SSH_CMD docker pull kartikkala/mirror_website:$VERSION-$BUILD
+CONTAINER_NAME="mirror_website"
 
-if [ -n "$CONTAINER_ID" ]; then
-    $SSH_CMD docker kill $CONTAINER_ID
+
+if [ $($SSH_CMD docker ps -q --filter "name=$CONTAINER_NAME") ] 
+then
+    echo "Container is running!"
+    docker rm -f $CONTAINER_NAME
+else
+    echo "Container is not running"
 fi
 
-$SSH_CMD docker run -p 80:80 -d --mount type=bind,src=$HOME/Downloads,dst=/downloadables kartikkala/mirror_website:latest
+$SSH_CMD docker run --name mirror_website -p $PORT:80 -d --mount type=bind,src=$HOME/Downloads,dst=/downloadables kartikkala/mirror_website:$VERSION-$BUILD

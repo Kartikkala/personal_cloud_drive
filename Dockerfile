@@ -14,8 +14,6 @@ RUN npm ci
 
 EXPOSE 80
 
-RUN mkdir downloadables
-
 VOLUME ["./downloadables"]
 
 CMD ["./start.sh"]
