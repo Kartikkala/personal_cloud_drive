@@ -81,7 +81,7 @@ describe('Test routes', function (){
             }
             else{
                 expect(res).to.satisfy((response) => {
-                    return response.status === 200 || response.status === 404;
+                    return response.status === 200 || response.status === 404
                   });
                 done()
             }
