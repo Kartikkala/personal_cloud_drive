@@ -11,6 +11,7 @@ then
     echo "Container is running!"
     docker rm -f $CONTAINER_NAME
 else
+    docker rm -f $CONTAINER_NAME
     echo "Container is not running"
 fi
 

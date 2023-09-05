@@ -74,7 +74,7 @@ export const addElements = {
     },
     async addFileObject(listItem, listItemStats,parentDiv)
     {
-        let downloadUrl = "downloadFile" + "/" + listItem;
+        let downloadUrl = "downloadFileClient" + "/" + listItem;
         let newFileItem = this.addDivision('fileItems');
         let fileNameDiv = this.addDivision('fileNameDiv');
         let newTextDiv = this.addDivision('textDiv');
