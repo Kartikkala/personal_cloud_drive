@@ -74,17 +74,47 @@ export const addElements = {
     },
     async addFileObject(listItem, listItemStats,parentDiv)
     {
-        let downloadUrl = "downloadFileClient" + "/" + listItem;
+        let downloadUrl = "/fs/downloadFileClient";
         let newFileItem = this.addDivision('fileItems');
         let fileNameDiv = this.addDivision('fileNameDiv');
         let newTextDiv = this.addDivision('textDiv');
         let fileSizeDiv = this.addDivision('fileSizeDiv');
         let fileActions = this.addDivision('actionBar');
-        let buttonIcon = this.addImageWithURL("../assets/icons/download.png", downloadUrl, 'actionButton');
+        let buttonIcon = this.addImage("../assets/icons/download.png", 'actionButton');
         let fileName = listItem;
         let fileSize = statParser.getFileSizeinMB(listItemStats);
         fileSizeDiv.appendChild(newTextDiv);
+        
+        buttonIcon.addEventListener('click', async () => {
+            try {
+                const response = await fetch(downloadUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ filePath: listItem }),
+                });
     
+                // Handle the response here
+                if (response.ok) {
+                    const blob = await response.blob();
+
+                    // Create an anchor element
+                    const anchor = document.createElement('a');
+                    anchor.href = window.URL.createObjectURL(blob);
+                    anchor.download = fileName; // Specify the filename
+        
+                    // Trigger a click event on the anchor element
+                    anchor.click();
+                } else {
+                    // Handle errors
+                    console.error('POST request failed');
+                }
+            } catch (error) {
+                console.error('An error occurred during the POST request:', error);
+            }
+        });
+
         if(fileSize>1024)
         {
             fileSize = statParser.convertMBtoGB(fileSize);

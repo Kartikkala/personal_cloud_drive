@@ -2,8 +2,16 @@ import { addElements } from "../views/dom.js";
 export const eventFunction = {
     refresh(downloadList, parentElement)
     {
+        const requestBody = {"filePath":'/'}
+        const request = new Request('/fs/ls', {
+            method: 'POST',
+            body: JSON.stringify(requestBody), // Convert the JSON object to a string
+            headers: {
+                'Content-Type': 'application/json' // Specify the content type
+            }
+        })
         parentElement.innerHTML = "";
-        fetch('/downloads')
+        fetch(request)
         .then((response)=>{
             response = response.text();
             return response;
