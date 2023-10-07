@@ -2,7 +2,8 @@ import { expect } from "chai"
 import chai from "chai"
 import chaiHttp from "chai-http"
 import {disconnectAria2, stopServer} from './teardown.js'
-import {app, server, aria2c} from '../app.js'
+import {app, server} from '../app.js'
+import { aria2c } from "../routes/aria2Routes.mjs"
 
 after(async ()=>{
     try{
