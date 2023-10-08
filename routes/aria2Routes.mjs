@@ -1,6 +1,7 @@
 import express from 'express'
 import ws from 'ws'
 import nodefetch from 'node-fetch'
+import path from 'path'
 import {Aria2Helper} from '../lib/fileTransfer/aria2Helper.mjs'
 
 
@@ -13,7 +14,7 @@ const aria2cOptions = {
 }
 const aria2c = new Aria2Helper(aria2cOptions)
 const ariaRouter = express.Router()
-const userDir = 'downloadables'
+const userDir = path.resolve('../downloadables')
 
 
 ariaRouter.post("/downloadFileServer", async (request, response)=>{
@@ -21,7 +22,6 @@ ariaRouter.post("/downloadFileServer", async (request, response)=>{
     const guid =  await aria2c.downloadWithURI([uri], userDir)
     if(guid === undefined)
     {
-        console.log("Hey, I am in if")
         response.status(500).send("<h1>Internal server Error</h1>")
     }
     else{

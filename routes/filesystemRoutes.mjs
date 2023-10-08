@@ -2,7 +2,7 @@ import express from 'express'
 import path from 'path'
 import { FileManager } from '../lib/fileSystem/fileSystem.mjs'
 
-const targetVolume = path.resolve("/home/sirkartik/vscode/mirror_website/downloadables")
+const targetVolume = path.resolve("../downloadables")
 const filesystemRouter = express.Router()
 const fileObject = new FileManager({rootPath : targetVolume})
 

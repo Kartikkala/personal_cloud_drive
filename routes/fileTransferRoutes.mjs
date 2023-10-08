@@ -5,7 +5,7 @@ import { fileObject } from './filesystemRoutes.mjs'
 
 const fileTransferRouter = express.Router()
 
-const targetVolume = path.resolve("/home/sirkartik/vscode/mirror_website/downloadables")
+const targetVolume = path.resolve("../downloadables")
 const maxFileTransferSpeed = 8e+7
 const fileTransfer = new FileTransfer(targetVolume, maxFileTransferSpeed)
 
