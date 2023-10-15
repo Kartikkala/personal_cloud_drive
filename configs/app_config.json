@@ -1,0 +1,28 @@
+{
+    "aria2_configs": 
+    {
+        "host" : "localhost",
+        "port": 6800,
+        "secure" : false,
+        "secret" : "",
+        "path": "/jsonrpc"
+    },
+    "user_auth_db_configs":
+    {
+        "app_name" : "personal_drive",
+        "user_auth_db_name" : "personal_drive",
+        "user_auth_db_collection_name" : "users",
+        "connection_timeout_ms" : 15000
+    },
+    "session_configs":
+    {
+        "sessionDBname" : "personal_drive",
+        "session_collection_name" : "sessions",
+        "session_store_secret" : "wuei2$nho$#23s",
+        "cookie_configs" : 
+        {
+            "secure" : false,
+            "expire_time_ms" : 86400000
+        }
+    }
+}

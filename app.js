@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url'
 import { fileTransferRouter } from './routes/fileTransferRoutes.mjs'
 import { ariaRouter } from './routes/aria2Routes.mjs'
 import { filesystemRouter } from './routes/filesystemRoutes.mjs'
+import { authenticationRouter } from './routes/authenticationRoutes.mjs'
 
 // Configurations
 
@@ -27,6 +28,7 @@ app.use(express.json())
 
 // Route handling
 
+app.use('/api', authenticationRouter)
 app.use("/", express.static(frontendApp))
 app.use('/aria', ariaRouter)
 app.use('/fs', filesystemRouter)

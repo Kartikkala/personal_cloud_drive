@@ -1,2 +1,3 @@
 downloadables/
 node_modules/
+.env

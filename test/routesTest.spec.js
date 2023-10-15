@@ -5,6 +5,7 @@ import {disconnectAria2, stopServer} from './teardown.js'
 import {app, server} from '../app.js'
 import { aria2c } from "../routes/aria2Routes.mjs"
 import { fileObject } from "../routes/filesystemRoutes.mjs"
+import { mongodb } from "../lib/db/db.mjs"
 
 const postRequestObj = {"uri":"http://139.59.77.129:9000/downloadFileClient/test.jar"}
 const testDirPath = "/"
@@ -16,6 +17,9 @@ after(async ()=>{
         await stopServer(server)
         console.log("Server stopped!!!")
         await disconnectAria2(aria2c)
+        console.log("Aria2 disconnected!!!")
+        await mongodb.close()
+        console.log("Disconnected from mongodb!!!")
     }
     catch(err){
         console.error(err)

@@ -4,6 +4,10 @@ RUN apt update
 
 RUN apt upgrade -y
 
+ARG MONGO_CONNECTION_STRING
+
+ENV MONGO_CONNECTION_STRING=${MONGO_CONNECTION_STRING}
+
 COPY . .
 
 RUN chmod +x start.sh

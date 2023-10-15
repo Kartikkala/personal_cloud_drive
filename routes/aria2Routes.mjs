@@ -3,18 +3,19 @@ import ws from 'ws'
 import nodefetch from 'node-fetch'
 import path from 'path'
 import {Aria2Helper} from '../lib/fileTransfer/aria2Helper.mjs'
+import {aria2_configs} from "../configs/app_config.js"
 
 
 const aria2cOptions = {
-    WebSocket: ws, fetch: nodefetch, host: 'localhost',
-    port: 6800,
-    secure: false,
-    secret: '',
-    path: '/jsonrpc'
+    WebSocket: ws, fetch: nodefetch, host: aria2_configs.host,
+    port: aria2_configs.port,
+    secure: aria2_configs.secure,
+    secret: aria2_configs.secret,
+    path: aria2_configs.path
 }
 const aria2c = new Aria2Helper(aria2cOptions)
 const ariaRouter = express.Router()
-const userDir = path.resolve('../downloadables')
+const userDir = path.resolve('./downloadables')
 
 
 ariaRouter.post("/downloadFileServer", async (request, response)=>{
