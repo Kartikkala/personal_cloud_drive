@@ -6,7 +6,7 @@
   "main": "app.js",
   "scripts": {
     "start": "NODE_ENV=deployment MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING sudo node app.js",
-    "test": ". /etc/environment && JUNIT_REPORT_PATH=/report.xml NODE_ENV=test MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING mocha --exit --colors --reporter mocha-jenkins-reporter 'test/*.spec.js'"
+    "test": ". '/etc/environment' && JUNIT_REPORT_PATH=/report.xml NODE_ENV=test MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING mocha --exit --colors --reporter mocha-jenkins-reporter 'test/*.spec.js'"
   },
   "author": "KartikKala",
   "license": "ISC",

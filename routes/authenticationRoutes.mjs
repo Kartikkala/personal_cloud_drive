@@ -1,21 +1,12 @@
 import express from 'express'
-import session from 'express-session'
 import passport from 'passport'
-import { localStratergy, mongoStore } from '../lib/authentication/authentication.mjs'
-import { serialize, deserialize, registerUser } from '../lib/authentication/utility.mjs'
-import {session_configs} from "../configs/app_config.js"
+import { registerUser } from '../lib/authentication/utility.mjs'
+
 
 const authenticationRouter = express.Router()
 
-authenticationRouter.use(session({store : mongoStore, secret : session_configs.session_store_secret, saveUninitialized: false, resave : false, cookie : {secure : session_configs.cookie_configs.secure, maxAge : session_configs.cookie_configs.expire_time_ms}}))
 authenticationRouter.use(express.json())
 authenticationRouter.use(express.urlencoded())
-authenticationRouter.use(passport.initialize())
-authenticationRouter.use(passport.session())
-
-passport.use('local', localStratergy)
-passport.serializeUser(serialize)
-passport.deserializeUser(deserialize)
 
 authenticationRouter.get("/failed", (req, res)=>{
     res.send("<h1>Failed to login</h1>")
@@ -37,4 +28,4 @@ authenticationRouter.post('/register', async (request, response)=>{
     }
 })
 
-export {authenticationRouter}
+export {authenticationRouter, passport}
