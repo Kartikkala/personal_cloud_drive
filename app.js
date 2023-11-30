@@ -12,11 +12,11 @@ import { ariaRouter } from './routes/aria2Routes.mjs'
 import { filesystemRouter } from './routes/filesystemRoutes.mjs'
 import { authenticationRouter } from './routes/authenticationRoutes.mjs'
 
-// Import objects from lib
+// Import objects from lib directory
 
 import { localStratergy, mongoStore } from './lib/authentication/authentication.mjs'
 import {session_configs} from "./configs/app_config.js"
-import { serialize, deserialize } from './lib/authentication/utility.mjs'
+import { authenticationMiddleware, serialize, deserialize } from './lib/authentication/utility.mjs'
 
 // Import passport object from authenticationRoutes.mjs
 
@@ -49,25 +49,14 @@ passport.serializeUser(serialize)
 passport.deserializeUser(deserialize)
 
 
-// Route handling
-
-app.get("/", (request, response, next)=>{
-    if(request.isAuthenticated())
-    {
-        next()
-    }
-    else
-    {
-        response.send("Unauthenticated!!!")
-    }
-})
+// Route 
 
 
 app.use('/api', authenticationRouter)
-app.use("/", express.static(frontendApp))
-app.use('/aria', ariaRouter)
-app.use('/fs', filesystemRouter)
-app.use('/fs', fileTransferRouter)
+app.use("/api", authenticationMiddleware ,express.static(frontendApp))
+app.use('/api/aria', authenticationMiddleware, ariaRouter)
+app.use('/api/fs', authenticationMiddleware, filesystemRouter)
+app.use('/api/fs', authenticationMiddleware,fileTransferRouter)
 
 
 

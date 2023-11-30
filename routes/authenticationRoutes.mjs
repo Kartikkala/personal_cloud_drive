@@ -12,7 +12,7 @@ authenticationRouter.get("/failed", (req, res)=>{
     res.send("<h1>Failed to login</h1>")
 })
 
-authenticationRouter.post('/login',  passport.authenticate('local', {successRedirect : '/', failureRedirect: '/api/failed', session: true}))
+authenticationRouter.post('/login',  passport.authenticate('local', {successRedirect : '/api', failureRedirect: '/api/failed', session: true}))
 authenticationRouter.post('/register', async (request, response)=>{
     const userObject = {
         username : request.body.username,
