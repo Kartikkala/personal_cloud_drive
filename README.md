@@ -1,6 +1,6 @@
-# 🖼️ Mirror Website
+# 🖼️ Personal Cloud Drive
 
-This is an app for creating mirrors. The app uses aria2 API for downloading files onto server and host them directly from there. Cloud drives are not compulsory but are available. Streaming options are also available for videos, so that you could download videos onto server and stream them anywhere, anytime, without downloading. This project is currently not completed and can just host the files, which are already present on the server. Other features are also yet to come...
+This app is used for creating personal cloud storage on either a VPC a personal computer. The app uses aria2 API for downloading files onto server and host them directly from there. Cloud drives are not compulsory but are available. Streaming options are also available for videos, so that you could download videos onto server and stream them anywhere, anytime, without downloading. This project is currently not completed and can just host the files, which are already present on the server. Other features are also yet to come...
 
 ## 🚀 Getting Started
 
