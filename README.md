@@ -1,6 +1,6 @@
 # 🖼️ Personal Cloud Drive
 
-This app is used for creating personal cloud storage on either a VPC a personal computer. The app uses aria2 API for downloading files onto server and host them directly from there. Cloud drives are not compulsory but are available. Streaming options are also available for videos, so that you could download videos onto server and stream them anywhere, anytime, without downloading. This project is currently not completed and can just host the files, which are already present on the server. Other features are also yet to come...
+This app is used for creating personal cloud storage on either a VPC a personal computer. The app uses aria2 API for downloading files onto server and host them directly from there. Option for connecting to google drive is also available. Streaming options are also available for videos, so that you could download videos onto server and stream them anywhere, anytime, without downloading. This project is currently not completed and can just host the files, which are already present on the server. Other features are also yet to come...
 
 ## 🚀 Getting Started
 
@@ -8,9 +8,9 @@ This app is used for creating personal cloud storage on either a VPC a personal 
 
 To get started with the project, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/Kartikkala/mirror_website.git`
+1. Clone the repository: `git clone https://github.com/Kartikkala/personal_cloud_drive.git`
 2. Install Docker on your machine if you haven't already: https://www.docker.com/get-started
-3. Navigate to the project directory: `cd mirror_website`
+3. Navigate to the project directory: `cd personal_cloud_drive`
 4. Run `docker build -t <image_name> . --no-cache` command to build the image with your preffered `image_name`.
 5. Run `docker run -p 80:80 -d --mount type=bind,src=path/to/volume,dst=/downloadables <image_name>` with root previliges (if using linux) where `path/to/volume` is the path from which all the files (videos, pictures or other files ) will be hosted on the website. .
 6. If you are doing this locally, then open localhost in your browser or.
@@ -22,7 +22,7 @@ To get started with the project, follow these steps:
 Prebuilt docker images are also available for this project, you can directly download them instead of cloning the repo and run them. To do this, follow these steps:
 
 1. Install docker on your machine.
-2. Pull the docker image using this command - `docker pull kartikkala/mirror_website`.
+2. Pull the docker image using this command - `docker pull kartikkala/personal_cloud_drive`.
 3. Run the image using - `docker run -p 80:80 -d --mount type=bind,src=path/to/volume,dst=/downloadables kartikkala/mirror_website:latest`, where `path/to/volume` is the path from which all the files (videos, pictures or other files ) will be hosted on the website. 
 4. The files present in the `path/to/volume` must be shown in the browser.
 
