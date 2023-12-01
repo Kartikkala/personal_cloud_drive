@@ -23,7 +23,7 @@ ariaRouter.post("/downloadFileServer", async (request, response)=>{
     const guid =  await aria2c.downloadWithURI([uri], userDir)
     if(guid === undefined)
     {
-        response.status(500).send("<h1>Internal server Error</h1>")
+        response.status(500).json({"error" : true, "reason": "Internal aria2 API error!!!"})
     }
     else{
         response.send({"guid" : guid,
@@ -36,7 +36,7 @@ ariaRouter.get("/cancelDownload/:guid", async (request, response)=>{
     const guid = request.params.guid
     if(await aria2c.cancelDownload(guid) === undefined)
     {
-        response.status(500).send("<h1>Internal server Error</h1>")
+        response.status(500).json({"error" : true, "reason": "Internal aria2 API error!!!"})
     }
     else{
         response.send({"guid" : guid,
@@ -48,7 +48,7 @@ ariaRouter.get("/cancelDownload/:guid", async (request, response)=>{
 ariaRouter.get("/pauseDownload/:guid", async (request, response)=>{
     const guid = request.params.guid
     if(await aria2c.pauseDownload(guid) === undefined){
-        response.status(500).send("<h1>Internal server Error</h1>")
+        response.status(500).json({"error" : true, "reason": "Internal aria2 API error!!!"})
     }
     else{
         response.send({"guid" : guid,
@@ -60,7 +60,7 @@ ariaRouter.get("/pauseDownload/:guid", async (request, response)=>{
 ariaRouter.get("/resumeDownload/:guid", async (request, response)=>{
     const guid = request.params.guid
     if(await aria2c.resumeDownload(guid) === undefined){
-        response.status(500).send("<h1>Internal server Error</h1>")
+        response.status(500).json({"error" : true, "reason": "Internal aria2 API error!!!"})
     }
     else{
         response.send({"guid" : guid,
