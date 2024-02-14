@@ -49,14 +49,16 @@ passport.serializeUser(serialize)
 passport.deserializeUser(deserialize)
 
 
-// Route 
-
+// Routes
 
 app.use('/api', authenticationRouter)
 app.use("/api", authenticationMiddleware ,express.static(frontendApp))
 app.use('/api/aria', authenticationMiddleware, ariaRouter)
 app.use('/api/fs', authenticationMiddleware, filesystemRouter)
 app.use('/api/fs', authenticationMiddleware,fileTransferRouter)
+app.get('/', (request, response)=>{
+    response.redirect('/api/login')
+})
 
 
 
