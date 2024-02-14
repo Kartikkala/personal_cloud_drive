@@ -8,11 +8,31 @@ const authenticationRouter = express.Router()
 authenticationRouter.use(express.json())
 authenticationRouter.use(express.urlencoded())
 
-authenticationRouter.get("/failed", (req, res)=>{
-    res.send("<h1>Failed to login</h1>")
+
+// Using an anonymous wrapper function to access request and response objects inside the
+// callback for passport.authenticate
+
+authenticationRouter.post('/login', (req, res)=>{
+    passport.authenticate('local', (err, user, info)=>{
+        if(err)
+        {
+            console.log("Some error occured in post login route - "+err)
+            return res.status(500).json({"message" : "Internal server error"})
+        }
+        if(!user)
+        {
+            return res.status(401).json({"message": "Invalid login credentials!"})
+        }
+        req.logIn(user, (err)=>{
+            if(err){
+                console.log("Login error -" + err)
+                return res.status(500).json({"message" : "Internal server error"})
+            }
+            return res.redirect('/api')
+        })
+    })(req, res)
 })
 
-authenticationRouter.post('/login',  passport.authenticate('local', {successRedirect : '/api', failureRedirect: '/api/failed', session: true}))
 authenticationRouter.post('/register', async (request, response)=>{
     const userObject = {
         username : request.body.username,
@@ -20,11 +40,11 @@ authenticationRouter.post('/register', async (request, response)=>{
     }
     const result = await registerUser(userObject)
     if(result){
-        response.send("Registration successful!!!")
+        response.status(200).json({"message": "Registration successful!!!"})
     }
     else
     {
-        response.send("Failed to register user!!!")
+        response.status(200).json({"message" : "Failed to register user!!!"})
     }
 })
 
