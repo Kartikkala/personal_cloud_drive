@@ -24,5 +24,9 @@
             "secure" : false,
             "expire_time_ms" : 86400000
         }
+    },
+    "fileManagerConfigs":
+    {
+        "rootPath" : "../downloadables"
     }
 }
