@@ -27,6 +27,6 @@
     },
     "fileManagerConfigs":
     {
-        "rootPath" : "../downloadables"
+        "rootPath" : "./downloadables"
     }
 }
