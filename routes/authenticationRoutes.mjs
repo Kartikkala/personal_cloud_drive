@@ -1,6 +1,7 @@
 import express from 'express'
 import passport from 'passport'
-import { registerUser } from '../lib/authentication/utility.mjs'
+import { issueJwt, registerUser } from '../lib/authentication/utility.mjs'
+import {sign} from 'crypto'
 
 
 const authenticationRouter = express.Router()
@@ -23,11 +24,13 @@ authenticationRouter.post('/login', (req, res)=>{
         {
             return res.status(401).json({"message": "Invalid login credentials!"})
         }
-        req.logIn(user, (err)=>{
+        req.logIn(user, async (err)=>{
             if(err){
                 console.log("Login error -" + err)
                 return res.status(500).json({"message" : "Internal server error"})
             }
+            const signedJwt = await issueJwt(user)
+            res.cookie("jwt", signedJwt, {httpOnly : true, expires : new Date(Date.now() + 24 * 60 * 60 * 1000)})
             return res.redirect('/api')
         })
     })(req, res)

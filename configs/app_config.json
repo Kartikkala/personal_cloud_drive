@@ -28,5 +28,11 @@
     "fileManagerConfigs":
     {
         "rootPath" : "./downloadables"
+    },
+    "keys_configuration":
+    {
+        "keypair_directory" : "./keys",
+        "publickey_filename" : "id_rsa_pub.pem",
+        "privatekey_filename" : "id_rsa_priv.pem"
     }
 }
