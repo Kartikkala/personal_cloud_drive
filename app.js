@@ -3,6 +3,7 @@ import express from 'express'
 import path, {dirname} from 'path'
 import { fileURLToPath } from 'url'
 import session from 'express-session'
+import { Server } from 'socket.io'
 
 
 // Import routes 
@@ -17,6 +18,7 @@ import { authenticationRouter } from './routes/authenticationRoutes.mjs'
 import { localStratergy, mongoStore } from './lib/authentication/authentication.mjs'
 import {session_configs} from "./configs/app_config.js"
 import { authenticationMiddleware, serialize, deserialize } from './lib/authentication/utility.mjs'
+import { genKeyPair } from './lib/authentication/keyMgmt.mjs'
 
 // Import passport object from authenticationRoutes.mjs
 
@@ -27,6 +29,7 @@ import { passport } from './routes/authenticationRoutes.mjs'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const frontendApp = path.join(__dirname, "/static/", "/downloadingWebsite/")
+const keyPair = genKeyPair()
 
 
 // Object creations and initializations
@@ -64,5 +67,10 @@ app.get('/', (request, response)=>{
 
 const port = process.env.NODE_ENV === 'test'? 8000 : 80
 const server = app.listen(port, '0.0.0.0', () => { console.log("Listening on port "+port+"...") })
+const io = new Server(server)
+
+io.on('connection', (socket)=>{
+    console.log(socket)
+})
 
 export {server, app}
