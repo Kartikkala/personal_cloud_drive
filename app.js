@@ -19,6 +19,7 @@ import { localStratergy, mongoStore } from './lib/authentication/authentication.
 import {session_configs} from "./configs/app_config.js"
 import { authenticationMiddleware, serialize, deserialize } from './lib/authentication/utility.mjs'
 import { genKeyPair } from './lib/authentication/keyMgmt.mjs'
+import {authenticate, updateDownloadStatus} from './lib/socketioMiddlewares/socketMiddlewares.mjs'
 
 // Import passport object from authenticationRoutes.mjs
 
@@ -69,8 +70,7 @@ const port = process.env.NODE_ENV === 'test'? 8000 : 80
 const server = app.listen(port, '0.0.0.0', () => { console.log("Listening on port "+port+"...") })
 const io = new Server(server)
 
-io.on('connection', (socket)=>{
-    console.log(socket)
-})
+io.use(authenticate)
+io.use(updateDownloadStatus)
 
 export {server, app}

@@ -12,6 +12,7 @@
         "app_name" : "personal_drive",
         "user_auth_db_name" : "personal_drive",
         "user_auth_db_collection_name" : "users",
+        "user_inactive_downloads_collection_name" : "inactive_downloads",
         "connection_timeout_ms" : 15000
     },
     "session_configs":
@@ -34,5 +35,9 @@
         "keypair_directory" : "./keys",
         "publickey_filename" : "id_rsa_pub.pem",
         "privatekey_filename" : "id_rsa_priv.pem"
+    },
+    "socketioConfigs" : 
+    {
+        "downloadStatusUpdateDurationInSeconds" : 3
     }
 }
