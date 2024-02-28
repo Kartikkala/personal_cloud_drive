@@ -4,6 +4,7 @@ import nodefetch from 'node-fetch'
 import path from 'path'
 import {Aria2Helper} from '../lib/fileTransfer/aria2Helper.mjs'
 import {aria2_configs} from "../configs/app_config.js"
+import {getInactiveDownloads} from '../lib/authentication/utility.mjs'
 
 
 const aria2cOptions = {
@@ -19,8 +20,9 @@ const userDir = path.resolve('./downloadables')
 
 
 ariaRouter.post("/downloadFileServer", async (request, response)=>{
+    const user = request.user
     const {uri} = request.body
-    const guid =  await aria2c.downloadWithURI([uri], userDir)
+    const guid =  await aria2c.downloadWithURI([uri], user, userDir)
     if(guid === undefined)
     {
         response.status(500).json({"error" : true, "reason": "Internal aria2 API error!!!"})
@@ -66,6 +68,21 @@ ariaRouter.get("/resumeDownload/:guid", async (request, response)=>{
         response.send({"guid" : guid,
                         "active": true,
                         "waiting": false})
+    }
+})
+
+ariaRouter.get("/getInactiveDownloads", async (request, response)=>{
+    const user = request.user
+    const inactiveDownloads = await getInactiveDownloads(user._id)
+    const inactiveDownloadsStatus = await aria2c.getUserDownloadStatus(inactiveDownloads, ["status","errorCode","errorMessage","files"])
+    console.log(inactiveDownloadsStatus)
+    if(inactiveDownloadsStatus)
+    {
+        response.json(inactiveDownloadsStatus)
+    }
+    else
+    {
+        response.json({"message": "No inactive downloads or failed to fetch inactive downloads!"})
     }
 })
 
