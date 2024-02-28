@@ -5,7 +5,9 @@
         "port": 6800,
         "secure" : false,
         "secret" : "",
-        "path": "/jsonrpc"
+        "path": "/jsonrpc",
+        "downloads_dir" : "Aria2_Downloads",
+        "downloadStatusUpdateDurationInSeconds" : 3
     },
     "user_auth_db_configs":
     {
@@ -35,9 +37,5 @@
         "keypair_directory" : "./keys",
         "publickey_filename" : "id_rsa_pub.pem",
         "privatekey_filename" : "id_rsa_priv.pem"
-    },
-    "socketioConfigs" : 
-    {
-        "downloadStatusUpdateDurationInSeconds" : 3
     }
 }
