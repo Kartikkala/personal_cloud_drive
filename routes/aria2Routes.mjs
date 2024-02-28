@@ -4,7 +4,8 @@ import nodefetch from 'node-fetch'
 import path from 'path'
 import {Aria2Helper} from '../lib/fileTransfer/aria2Helper.mjs'
 import {aria2_configs} from "../configs/app_config.js"
-import {getInactiveDownloads} from '../lib/authentication/utility.mjs'
+import { file_manager_configs } from '../configs/app_config.js'
+import {getInactiveDownloads, getUserDir} from '../lib/authentication/utility.mjs'
 
 
 const aria2cOptions = {
@@ -12,16 +13,20 @@ const aria2cOptions = {
     port: aria2_configs.port,
     secure: aria2_configs.secure,
     secret: aria2_configs.secret,
-    path: aria2_configs.path
+    path: aria2_configs.path,
+    downloadStatusUpdateDuration : aria2_configs.downloadStatusUpdateDurationInSeconds * 1000
 }
 const aria2c = new Aria2Helper(aria2cOptions)
 const ariaRouter = express.Router()
-const userDir = path.resolve('./downloadables')
+// Get each user's dir and download in that dir
+const rootDir = path.resolve(file_manager_configs.rootPath)
 
 
 ariaRouter.post("/downloadFileServer", async (request, response)=>{
     const user = request.user
     const {uri} = request.body
+    const userDir = path.join(rootDir, await getUserDir(user._id), aria2_configs.downloads_dir)
+
     const guid =  await aria2c.downloadWithURI([uri], user, userDir)
     if(guid === undefined)
     {
@@ -75,7 +80,6 @@ ariaRouter.get("/getInactiveDownloads", async (request, response)=>{
     const user = request.user
     const inactiveDownloads = await getInactiveDownloads(user._id)
     const inactiveDownloadsStatus = await aria2c.getUserDownloadStatus(inactiveDownloads, ["status","errorCode","errorMessage","files"])
-    console.log(inactiveDownloadsStatus)
     if(inactiveDownloadsStatus)
     {
         response.json(inactiveDownloadsStatus)
