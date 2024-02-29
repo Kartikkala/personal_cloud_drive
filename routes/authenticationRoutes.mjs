@@ -1,7 +1,7 @@
 import express from 'express'
 import passport from 'passport'
-import { issueJwt, registerUser } from '../lib/authentication/utility.mjs'
-import {sign} from 'crypto'
+import { issueJwt } from '../lib/authentication/utils/userAuthUtilFunctions.mjs'
+import { registerUser } from '../lib/authentication/utils/userAuthDBUtils.mjs'
 
 
 const authenticationRouter = express.Router()
@@ -45,15 +45,15 @@ authenticationRouter.post('/register', async (request, response)=>{
     }
     if(!userObject.first_name || !userObject.last_name|| !userObject.username || !userObject.password)
     {
-        response.status(400).json({"message" : "Please fill out all credentials!!!"})
+        return response.status(400).json({"message" : "Please fill out all credentials!!!"})
     }
     const result = await registerUser(userObject)
     if(result){
-        response.status(200).json({"message": "Registration successful!!!"})
+        return response.status(200).json({"message": "Registration successful!!!"})
     }
     else
     {
-        response.status(200).json({"message" : "Failed to register user!!!"})
+        return response.status(200).json({"message" : "Failed to register user!!!"})
     }
 })
 
