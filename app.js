@@ -19,7 +19,7 @@ import { localStratergy } from './lib/authentication/stratergy.mjs'
 import { mongoStore } from './lib/db/db.mjs'
 import {session_configs} from "./configs/app_config.js"
 import { authenticationMiddleware } from './lib/authentication/utils/userAuthUtilFunctions.mjs'
-import { serialize, deserialize } from './lib/authentication/utils/userAuthDBUtils.mjs'
+import { serialize, deserialize, checkAndCreateAdmin } from './lib/authentication/utils/userAuthDBUtils.mjs'
 import { genKeyPair } from './lib/authentication/keyMgmt.mjs'
 import {authenticate, updateDownloadStatus} from './lib/socketioMiddlewares/socketMiddlewares.mjs'
 
@@ -36,6 +36,7 @@ const frontendApp = path.join(__dirname, "/static/", "/downloadingWebsite/")
 // Generate RSA keypair for jwt
 
 genKeyPair()
+checkAndCreateAdmin()
 
 
 // Object creations and initializations
@@ -47,7 +48,7 @@ const app = express()
 app.disable('x-powered-by')
 app.use(session({store : mongoStore, secret : session_configs.session_store_secret, saveUninitialized: false, resave : false, cookie : {secure : session_configs.cookie_configs.secure, maxAge : session_configs.cookie_configs.expire_time_ms}}))
 app.use(express.json())
-app.use(express.urlencoded())
+app.use(express.urlencoded({extended : true}))
 app.use(passport.initialize())
 app.use(passport.session())
 

@@ -7,7 +7,7 @@ import { registerUser } from '../lib/authentication/utils/userAuthDBUtils.mjs'
 const authenticationRouter = express.Router()
 
 authenticationRouter.use(express.json())
-authenticationRouter.use(express.urlencoded())
+authenticationRouter.use(express.urlencoded({extended : true}))
 
 
 // Using an anonymous wrapper function to access request and response objects inside the
@@ -43,18 +43,8 @@ authenticationRouter.post('/register', async (request, response)=>{
         username : request.body.username,
         password : request.body.password
     }
-    if(!userObject.first_name || !userObject.last_name|| !userObject.username || !userObject.password)
-    {
-        return response.status(400).json({"message" : "Please fill out all credentials!!!"})
-    }
     const result = await registerUser(userObject)
-    if(result){
-        return response.status(200).json({"message": "Registration successful!!!"})
-    }
-    else
-    {
-        return response.status(200).json({"message" : "Failed to register user!!!"})
-    }
+    response.json(result)
 })
 
 export {authenticationRouter, passport}
