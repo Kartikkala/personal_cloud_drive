@@ -32,7 +32,10 @@ import { passport } from './routes/authenticationRoutes.mjs'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const frontendApp = path.join(__dirname, "/static/", "/downloadingWebsite/")
-const keyPair = genKeyPair()
+
+// Generate RSA keypair for jwt
+
+genKeyPair()
 
 
 // Object creations and initializations
