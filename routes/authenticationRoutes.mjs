@@ -38,8 +38,14 @@ authenticationRouter.post('/login', (req, res)=>{
 
 authenticationRouter.post('/register', async (request, response)=>{
     const userObject = {
+        first_name : request.body.fname,
+        last_name : request.body.lname,
         username : request.body.username,
         password : request.body.password
+    }
+    if(!userObject.first_name || !userObject.last_name|| !userObject.username || !userObject.password)
+    {
+        response.status(400).json({"message" : "Please fill out all credentials!!!"})
     }
     const result = await registerUser(userObject)
     if(result){
