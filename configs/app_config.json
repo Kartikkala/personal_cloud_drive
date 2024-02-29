@@ -11,11 +11,10 @@
     },
     "user_auth_db_configs":
     {
-        "app_name" : "personal_drive",
         "user_auth_db_name" : "personal_drive",
         "user_auth_db_collection_name" : "users",
         "user_inactive_downloads_collection_name" : "inactive_downloads",
-        "connection_timeout_ms" : 15000,
+        "connection_timeout_ms" : 5000,
         "number_of_salt_rounds" : 12
     },
     "session_configs":
