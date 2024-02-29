@@ -15,9 +15,11 @@ import { authenticationRouter } from './routes/authenticationRoutes.mjs'
 
 // Import objects from lib directory
 
-import { localStratergy, mongoStore } from './lib/authentication/authentication.mjs'
+import { localStratergy } from './lib/authentication/stratergy.mjs'
+import { mongoStore } from './lib/db/db.mjs'
 import {session_configs} from "./configs/app_config.js"
-import { authenticationMiddleware, serialize, deserialize } from './lib/authentication/utility.mjs'
+import { authenticationMiddleware } from './lib/authentication/utils/userAuthUtilFunctions.mjs'
+import { serialize, deserialize } from './lib/authentication/utils/userAuthDBUtils.mjs'
 import { genKeyPair } from './lib/authentication/keyMgmt.mjs'
 import {authenticate, updateDownloadStatus} from './lib/socketioMiddlewares/socketMiddlewares.mjs'
 

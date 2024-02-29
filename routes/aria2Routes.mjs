@@ -5,7 +5,7 @@ import path from 'path'
 import {Aria2Helper} from '../lib/fileTransfer/aria2Helper.mjs'
 import {aria2_configs} from "../configs/app_config.js"
 import { file_manager_configs } from '../configs/app_config.js'
-import {getInactiveDownloads, getUserDir} from '../lib/authentication/utility.mjs'
+import {getInactiveDownloads, getUserDir} from '../lib/authentication/utils/userInfoUtils.mjs'
 
 
 const aria2cOptions = {
