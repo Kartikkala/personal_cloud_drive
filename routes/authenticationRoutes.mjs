@@ -29,8 +29,11 @@ authenticationRouter.post('/login', (req, res)=>{
                 console.log("Login error -" + err)
                 return res.status(500).json({"message" : "Internal server error"})
             }
-            const signedJwt = await issueJwt(user)
-            res.cookie("jwt", signedJwt, {httpOnly : true, expires : new Date(Date.now() + 24 * 60 * 60 * 1000)})
+            if(req.user.hasAccess)
+            {
+                const signedJwt = await issueJwt(user)
+                res.cookie("jwt", signedJwt, {httpOnly : true, expires : new Date(Date.now() + 24 * 60 * 60 * 1000)})
+            }
             return res.redirect('/api')
         })
     })(req, res)
