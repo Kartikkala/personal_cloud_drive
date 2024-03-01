@@ -12,13 +12,14 @@ import { fileTransferRouter } from './routes/fileTransferRoutes.mjs'
 import { ariaRouter } from './routes/aria2Routes.mjs'
 import { filesystemRouter } from './routes/filesystemRoutes.mjs'
 import { authenticationRouter } from './routes/authenticationRoutes.mjs'
+import {userManagementRouter} from './routes/userManagementRoutes.mjs'
 
 // Import objects from lib directory
 
 import { localStratergy } from './lib/authentication/stratergy.mjs'
 import { mongoStore } from './lib/db/db.mjs'
 import {session_configs} from "./configs/app_config.js"
-import { authenticationMiddleware } from './lib/authentication/utils/userAuthUtilFunctions.mjs'
+import { authenticationMiddleware, checkAccess, checkAdmin } from './lib/authentication/utils/userAuthUtilFunctions.mjs'
 import { serialize, deserialize, checkAndCreateAdmin } from './lib/authentication/utils/userAuthDBUtils.mjs'
 import { genKeyPair } from './lib/authentication/keyMgmt.mjs'
 import {authenticate, updateDownloadStatus} from './lib/socketioMiddlewares/socketMiddlewares.mjs'
@@ -36,6 +37,10 @@ const frontendApp = path.join(__dirname, "/static/", "/downloadingWebsite/")
 // Generate RSA keypair for jwt
 
 genKeyPair()
+
+// Check if admin user exists in database and create
+// admin user if not present
+
 checkAndCreateAdmin()
 
 
@@ -63,9 +68,10 @@ passport.deserializeUser(deserialize)
 
 app.use('/api', authenticationRouter)
 app.use("/api", authenticationMiddleware ,express.static(frontendApp))
-app.use('/api/aria', authenticationMiddleware, ariaRouter)
-app.use('/api/fs', authenticationMiddleware, filesystemRouter)
-app.use('/api/fs', authenticationMiddleware,fileTransferRouter)
+app.use('/api/aria', authenticationMiddleware, checkAccess ,ariaRouter)
+app.use('/api/fs', authenticationMiddleware, checkAccess,filesystemRouter)
+app.use('/api/fs', authenticationMiddleware,checkAccess ,fileTransferRouter)
+app.use('/api/usermanagement', authenticationMiddleware, checkAdmin, userManagementRouter)
 app.get('/', (request, response)=>{
     response.redirect('/api/login')
 })
