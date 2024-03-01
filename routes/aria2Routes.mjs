@@ -20,6 +20,16 @@ const aria2c = new Aria2Helper(aria2cOptions)
 const ariaRouter = express.Router()
 // Get each user's dir and download in that dir
 const rootDir = path.resolve(file_manager_configs.rootPath)
+const responseObject = {
+    "guid" : undefined,
+    "valid" : false, 
+    "active": false,
+}
+
+const failedResponseObject = {
+    "valid" : false, 
+    "active": false,
+}
 
 
 ariaRouter.post("/downloadFileServer", async (request, response)=>{
@@ -30,12 +40,13 @@ ariaRouter.post("/downloadFileServer", async (request, response)=>{
     const guid =  await aria2c.downloadWithURI([uri], user, userDir)
     if(guid === undefined)
     {
-        response.status(500).json({"error" : true, "reason": "Internal aria2 API error!!!"})
+        response.json(failedResponseObject)
     }
     else{
-        response.send({"guid" : guid,
-        "active": true,
-        "waiting": false})
+        responseObject.guid = guid
+        responseObject.valid = true
+        responseObject.active = true
+        response.send(responseObject)
     }
 })
 
@@ -43,36 +54,39 @@ ariaRouter.get("/cancelDownload/:guid", async (request, response)=>{
     const guid = request.params.guid
     if(await aria2c.cancelDownload(guid) === undefined)
     {
-        response.status(500).json({"error" : true, "reason": "Internal aria2 API error!!!"})
+        response.json(failedResponseObject)
     }
     else{
-        response.send({"guid" : guid,
-                        "active": false,
-                        "waiting": false})
+        responseObject.guid = guid
+        responseObject.valid = true
+        responseObject.active = false
+        response.json(responseObject)
     }
 })
 
 ariaRouter.get("/pauseDownload/:guid", async (request, response)=>{
     const guid = request.params.guid
     if(await aria2c.pauseDownload(guid) === undefined){
-        response.status(500).json({"error" : true, "reason": "Internal aria2 API error!!!"})
+        response.json(failedResponseObject)
     }
     else{
-        response.send({"guid" : guid,
-                        "active": false,
-                        "waiting": true})
+        responseObject.guid = guid
+        responseObject.valid = true
+        responseObject.active = false
+        response.json(responseObject)
     }
 })
 
 ariaRouter.get("/resumeDownload/:guid", async (request, response)=>{
     const guid = request.params.guid
     if(await aria2c.resumeDownload(guid) === undefined){
-        response.status(500).json({"error" : true, "reason": "Internal aria2 API error!!!"})
+        response.json(failedResponseObject)
     }
     else{
-        response.send({"guid" : guid,
-                        "active": true,
-                        "waiting": false})
+        responseObject.guid = guid
+        responseObject.valid = true
+        responseObject.active = true
+        response.json(responseObject)
     }
 })
 
