@@ -4,8 +4,8 @@ import nodefetch from 'node-fetch'
 import path from 'path'
 import {Aria2Helper} from '../lib/fileTransfer/aria2Helper.mjs'
 import {aria2_configs} from "../configs/app_config.js"
-import { file_manager_configs } from '../configs/app_config.js'
-import {getInactiveDownloads, getUserDir} from '../lib/authentication/utils/userInfoUtils.mjs'
+import { app_configs } from '../configs/app_config.js'
+import {getInactiveDownloads} from '../lib/authentication/utils/userInfoUtils.mjs'
 
 
 const aria2cOptions = {
@@ -19,25 +19,35 @@ const aria2cOptions = {
 const aria2c = new Aria2Helper(aria2cOptions)
 const ariaRouter = express.Router()
 // Get each user's dir and download in that dir
-const rootDir = path.resolve(file_manager_configs.rootPath)
+const rootDir = path.resolve(app_configs.rootPath)
 const responseObject = {
     "guid" : undefined,
     "valid" : false, 
     "active": false,
+    "exception" : null
 }
 
 const failedResponseObject = {
     "valid" : false, 
     "active": false,
+    "exception" : null
 }
 
 
 ariaRouter.post("/downloadFileServer", async (request, response)=>{
     const user = request.user
     const {uri} = request.body
-    const userDir = path.join(rootDir, await getUserDir(user._id), aria2_configs.downloads_dir)
+    const userDir = path.join(rootDir, user.userDir, aria2_configs.downloads_dir)
+    let guid = undefined
 
-    const guid =  await aria2c.downloadWithURI([uri], user, userDir)
+    try{
+        guid =  await aria2c.downloadWithURI([uri], user, userDir)
+    }
+    catch(exception)
+    {
+        responseObject.exception = exception.message
+        failedResponseObject.exception = exception.message
+    }
     if(guid === undefined)
     {
         response.json(failedResponseObject)
@@ -45,7 +55,7 @@ ariaRouter.post("/downloadFileServer", async (request, response)=>{
     else{
         responseObject.guid = guid
         responseObject.valid = true
-        responseObject.active = true
+        responseObject.exception ? responseObject.active = false : responseObject.active = true
         response.send(responseObject)
     }
 })

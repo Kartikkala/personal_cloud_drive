@@ -15,7 +15,8 @@
         "user_auth_db_collection_name" : "users",
         "user_inactive_downloads_collection_name" : "inactive_downloads",
         "connection_timeout_ms" : 5000,
-        "number_of_salt_rounds" : 12
+        "number_of_salt_rounds" : 12,
+        "admin_storage_space" : 107374182400
     },
     "session_configs":
     {
@@ -28,7 +29,7 @@
             "expire_time_ms" : 86400000
         }
     },
-    "fileManagerConfigs":
+    "app_configs":
     {
         "rootPath" : "./downloadables"
     },
