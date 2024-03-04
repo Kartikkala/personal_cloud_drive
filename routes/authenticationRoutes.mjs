@@ -1,6 +1,5 @@
 import express from 'express'
 import passport from 'passport'
-import { issueJwt } from '../lib/authentication/utils/userAuthUtilFunctions.mjs'
 import { registerUser } from '../lib/authentication/utils/userAuthDBUtils.mjs'
 
 
@@ -28,11 +27,6 @@ authenticationRouter.post('/login', (req, res)=>{
             if(err){
                 console.log("Login error -" + err)
                 return res.status(500).json({"message" : "Internal server error"})
-            }
-            if(req.user.hasAccess)
-            {
-                const signedJwt = await issueJwt(user)
-                res.cookie("jwt", signedJwt, {httpOnly : true, expires : new Date(Date.now() + 24 * 60 * 60 * 1000)})
             }
             return res.redirect('/api')
         })

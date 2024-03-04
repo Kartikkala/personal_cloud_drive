@@ -1,11 +1,10 @@
 import express from 'express'
 import path from 'path'
 import { FileManager } from '../lib/fileSystem/fileSystem.mjs'
-import { file_manager_configs } from '../configs/app_config.js'
+import { app_configs } from '../configs/app_config.js'
 
 
-const targetVolume = path.resolve(file_manager_configs.rootPath)
-console.log(targetVolume)
+const targetVolume = path.resolve(app_configs.rootPath)
 const filesystemRouter = express.Router()
 const fileObject = new FileManager({rootPath : targetVolume})
 

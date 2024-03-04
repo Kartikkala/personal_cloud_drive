@@ -19,7 +19,7 @@ import {userManagementRouter} from './routes/userManagementRoutes.mjs'
 import { localStratergy } from './lib/authentication/stratergy.mjs'
 import { mongoStore } from './lib/db/db.mjs'
 import {session_configs} from "./configs/app_config.js"
-import { authenticationMiddleware, checkAccess, checkAdmin } from './lib/authentication/utils/userAuthUtilFunctions.mjs'
+import { authenticationMiddleware, checkAccess, checkAdmin, postLoginJobs } from './lib/authentication/utils/userAuthUtilFunctions.mjs'
 import { serialize, deserialize, checkAndCreateAdmin } from './lib/authentication/utils/userAuthDBUtils.mjs'
 import { genKeyPair } from './lib/authentication/keyMgmt.mjs'
 import {authenticate, updateDownloadStatus} from './lib/socketioMiddlewares/socketMiddlewares.mjs'
@@ -67,7 +67,7 @@ passport.deserializeUser(deserialize)
 // Routes
 
 app.use('/api', authenticationRouter)
-app.use("/api", authenticationMiddleware ,express.static(frontendApp))
+app.use("/api", authenticationMiddleware , postLoginJobs ,express.static(frontendApp))
 app.use('/api/aria', authenticationMiddleware, checkAccess ,ariaRouter)
 app.use('/api/fs', authenticationMiddleware, checkAccess,filesystemRouter)
 app.use('/api/fs', authenticationMiddleware,checkAccess ,fileTransferRouter)
