@@ -16,7 +16,7 @@
         "user_inactive_downloads_collection_name" : "inactive_downloads",
         "connection_timeout_ms" : 5000,
         "number_of_salt_rounds" : 12,
-        "admin_storage_space" : 107374182400
+        "admin_storage_space" : 32212254720
     },
     "session_configs":
     {
