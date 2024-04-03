@@ -3,6 +3,7 @@ import ws from 'ws'
 import nodefetch from 'node-fetch'
 import path from 'path'
 import {Aria2Helper} from '../lib/fileTransfer/aria2Helper.mjs'
+import Aria2 from 'aria2'
 import {aria2_configs} from "../configs/app_config.js"
 import { app_configs } from '../configs/app_config.js'
 import {getInactiveDownloads} from '../lib/authentication/utils/userInfoUtils.mjs'
@@ -14,9 +15,9 @@ const aria2cOptions = {
     secure: aria2_configs.secure,
     secret: aria2_configs.secret,
     path: aria2_configs.path,
-    downloadStatusUpdateDuration : aria2_configs.downloadStatusUpdateDurationInSeconds * 1000
 }
-const aria2c = new Aria2Helper(aria2cOptions)
+const aria2Client = new Aria2(aria2cOptions, aria2_configs.downloadStatusUpdateDurationInSeconds)
+const aria2c = new Aria2Helper(aria2Client)
 const ariaRouter = express.Router()
 // Get each user's dir and download in that dir
 const rootDir = path.resolve(app_configs.rootPath)
