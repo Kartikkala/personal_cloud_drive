@@ -11,6 +11,7 @@ const fileObject = new FileManager({rootPath : targetVolume})
 filesystemRouter.use("/ls", fileObject.getResourceStatsInDirectory)
 filesystemRouter.use("/copy", fileObject.copyMiddleware)
 filesystemRouter.use("/delete", fileObject.deleteMiddleware)
+filesystemRouter.use("/move", fileObject.moveMiddleware)
 
 filesystemRouter.post("/ls", (request, response) => {
     const content = response.locals.resourceInfo
@@ -24,6 +25,11 @@ filesystemRouter.post("/copy", (request, response)=>{
 })
 
 filesystemRouter.post("/delete", (request, response)=>{
+    const result = response.locals.result
+    response.json(result)
+})
+
+filesystemRouter.post("/move", (request, response)=>{
     const result = response.locals.result
     response.json(result)
 })
