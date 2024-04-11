@@ -31,7 +31,8 @@
     },
     "app_configs":
     {
-        "rootPath" : "./downloadables"
+        "mountPaths" : ["./downloadables"],
+        "workingDir" : "CloudDrive"
     },
     "keys_configuration":
     {
