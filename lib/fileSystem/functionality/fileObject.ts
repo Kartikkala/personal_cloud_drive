@@ -1,27 +1,24 @@
 import path from 'path'
 import fs from 'fs/promises'
 import filesystem from 'fs'
+import { NFileObject } from '../../../types/lib/fileSystem/types.js'
 
-export class FileObject{
-    #totalUserSpace = 0
-    #userDirName = undefined
-    #userDirMountPath = undefined
-    #workingDir = undefined
-    constructor(userDirName, userDirMountPath, workingDir ,totalUserSpaceInBytes)
+export class FileObject implements NFileObject.IFileObject{
+    private totalUserSpace:number = 0
+    private userDirName :string
+    private userDirMountPath: string
+    private workingDir: string
+    constructor(userDirName: string, userDirMountPath: string, workingDir: string ,totalUserSpaceInBytes: number)
     {
         if(!userDirName || !userDirMountPath || !totalUserSpaceInBytes || !workingDir)
         {
-            console.log(userDirName)
-            console.log(userDirMountPath)
-            console.log(totalUserSpaceInBytes)
-            console.log(workingDir)
             throw new Error("Invalid instance creation for file object")
         }
 
-        this.#workingDir = workingDir
-        this.#totalUserSpace = totalUserSpaceInBytes
-        this.#userDirName = userDirName
-        this.#userDirMountPath = userDirMountPath
+        this.workingDir = workingDir
+        this.totalUserSpace = totalUserSpaceInBytes
+        this.userDirName = userDirName
+        this.userDirMountPath = userDirMountPath
 
         this.getDirectoryContents = this.getDirectoryContents.bind(this)
         this.getResourceStatsInDirectory = this.getResourceStatsInDirectory.bind(this)
@@ -40,42 +37,36 @@ export class FileObject{
     }
 
 
-    getUserInfo()
+    public getUserInfo() : NFileObject.IPartialUserDiskStats
     {
-        return {"totalUserSpace" : this.#totalUserSpace , "userDirName" : this.#userDirName, "userDirMountPath" : this.#userDirMountPath}
+        return {"totalUserSpaceInBytes" : this.totalUserSpace , "userDirName" : this.userDirName, "userDirMountPath" : this.userDirMountPath}
     }
 
-    changeTotalUserSpace(updatedTotalUserSpaceInBytes)
+    public changeTotalUserSpace(updatedTotalUserSpaceInBytes : number) : number
     {
-        const difference = updatedTotalUserSpaceInBytes - this.#totalUserSpace
-        this.#totalUserSpace = updatedTotalUserSpaceInBytes
+        const difference = updatedTotalUserSpaceInBytes - this.totalUserSpace
+        this.totalUserSpace = updatedTotalUserSpaceInBytes
+        return updatedTotalUserSpaceInBytes
     }
-
-    /**
-     * 
-     * @param {string} targetPath - File system path to be checked for permissions
-     * @returns {Promise<Permission>} 
-     *
-     */
     
-    async checkPermission(targetPath){
-        const permissionObject = {'permission': false, 'exception':false, 'pathExists':true, 'dirName' : undefined, 'fileName' : undefined}
-        let fullPath = undefined
+    public async checkPermission(targetPath : string): Promise<NFileObject.IPermissionObject>{
+        const permissionObject: NFileObject.IPermissionObject = {'permission': false, 'exception':false, 'pathExists':true, 'dirName' : '', 'fileName' : undefined}
+        let fullPath : string
         try{
-            let requestedPath = path.join(this.#userDirMountPath, this.#workingDir ,this.#userDirName ,targetPath)
+            let requestedPath : string = path.join(this.userDirMountPath, this.workingDir ,this.userDirName ,targetPath)
             if(targetPath.endsWith('/'))
             {
                 permissionObject.dirName = requestedPath
             }
             else
             {
-                const pathArray = requestedPath.split('/')
-                const fileName = pathArray.pop()
+                const pathArray : Array<string> = requestedPath.split('/')
+                const fileName : string | undefined = pathArray.pop()
                 permissionObject.dirName = path.dirname(requestedPath)
                 permissionObject.fileName = fileName
             }
             fullPath = path.normalize(requestedPath)
-            permissionObject.permission = fullPath.startsWith(path.join(this.#userDirMountPath, this.#workingDir ,this.#userDirName))
+            permissionObject.permission = fullPath.startsWith(path.join(this.userDirMountPath, this.workingDir ,this.userDirName))
             permissionObject.pathExists = filesystem.existsSync(fullPath)
         }
         catch(exception){
@@ -86,119 +77,90 @@ export class FileObject{
         return permissionObject
     }
 
-    /**
-     * @function ***getDirectoryContents***
-     * 
-     * 
-     * 
-     * 
-     * @param {string} targetPath - The Express.js request object
-     * 
-     * @returns {Promise<resourceInfo>}
-     */
    
-    async getDirectoryContents(targetPath){
-        const permissionObject = await this.checkPermission(targetPath)
-        const resourceInfo = {...permissionObject, 'content':[]}
+    public async getDirectoryContents(targetPath: string) : Promise<NFileObject.IContentObject>{
+        const permissionObject : NFileObject.IPermissionObject = await this.checkPermission(targetPath)
+        const contentObject: NFileObject.IContentObject = {...permissionObject, 'content':[]}
         if(permissionObject.permission && !permissionObject.fileName){
             try{
-                const dir = permissionObject['dirName']
-                resourceInfo.content = await fs.readdir(dir)
+                const dir : string = permissionObject['dirName']
+                contentObject.content = await fs.readdir(dir)
             }
             catch(exception){
-                resourceInfo.exception = true
+                contentObject.exception = true
                 console.error("Error retrieving directory contents!!!")
                 console.error(exception)
             }
         }
-        return resourceInfo
+        return contentObject
     }
 
-    /**
-     * @function ***getResourceStatsInDirectory***
-     * 
-     * 
-     * 
-     * 
-     * @param {string} targetPath - The Express.js request object
-     * 
-     * @returns {Promise<resourceInfo>}
-     */
-    async getResourceStatsInDirectory(targetPath)
+
+    public async getResourceStatsInDirectory(targetPath:string) : Promise<NFileObject.IContentStatsObject>
     {
-        let stats = []
-        const resourceInfo = await this.getDirectoryContents(targetPath)
-        const directoryContents = resourceInfo.content
+        let stats : Array<NFileObject.IFileStats> = []
+        const contentObject: NFileObject.IContentObject = await this.getDirectoryContents(targetPath)
+        const directoryContents : Array<string> = contentObject.content
         try{
             for(let element of directoryContents){
-                let filePath = path.join(resourceInfo['dirName'], element)
-                let fileStat = await fs.stat(filePath)
-                fileStat.directory = fileStat.isDirectory()
-                fileStat.file = fileStat.isFile()
-                fileStat.symlink = fileStat.isSymbolicLink()
-                fileStat.name = element
-                delete fileStat.uid
-                delete fileStat.gid
-                delete fileStat.atime
-                delete fileStat.atimeMs
-                delete fileStat.ctime
-                delete fileStat.ctimeMs
-                delete fileStat.blocks
-                delete fileStat.nlink
-                delete fileStat.dev
-                delete fileStat.ino
-                delete fileStat.birthtimeMs
-                delete fileStat.mode
-                delete fileStat.rdev
-                delete fileStat.blksize
-                delete fileStat.mtime
-                delete fileStat.mtimeMs
-                stats.push(fileStat)
+                let filePath : string | object = path.join(contentObject['dirName'], element)
+                const fileStat = await fs.stat(filePath)
+                const statObject : NFileObject.IFileStats = 
+                {name : element, size : fileStat.size, birthtime : fileStat.birthtime, isDirectory : fileStat.isDirectory(), isFile : fileStat.isFile()}
+                stats.push(statObject)
             }
         }
         catch(exception){
             console.error("Error occured while getting stats for directory contents!!!")
             console.error(exception)
-            resourceInfo.exception = true
+            contentObject.exception = true
         }
-        resourceInfo.content = stats
-        return resourceInfo
+
+        const contentStatsObject : NFileObject.IContentStatsObject = {permission : contentObject.permission,
+            pathExists : contentObject.pathExists,
+            exception : contentObject.exception,
+            content : stats, 
+            dirName : contentObject.dirName,
+            fileName : contentObject.fileName}
+        return contentStatsObject
     }
 
-    async copy(source, destination)
+    public async copy(source:ReadonlyArray<string>, destination:string) : Promise<Array<NFileObject.ICopyStatus>>
     {
         if(!Array.isArray(source) || !destination || !source)
         {
             throw Error("InvalidSourceOrDestination")
         }
-        destination = await this.checkPermission(destination)
+        const destinationPermissionObject : NFileObject.IPermissionObject = await this.checkPermission(destination)
         const result = source.map(async (element) => {
-            const sourceObject = await this.checkPermission(element)
-            const copyStatus = {
-                ...sourceObject,
-                "copied" : false,
-                "dirName" : undefined,
-                "errorMessage" : undefined
+            const sourceObject : NFileObject.IPermissionObject = await this.checkPermission(element)
+            const copyStatus : NFileObject.ICopyStatus = {
+                permission : sourceObject.permission,
+                pathExists : sourceObject.pathExists,
+                exception  : sourceObject.pathExists,
+                copied     : false,
+                target     : element,
+                error      : ""
             }
 
             // TODO : Recheck this logic from here and change it if there is some problem or redundancy
-            if(sourceObject.permission && destination.permission)
+            if(sourceObject.permission && destinationPermissionObject.permission && sourceObject.pathExists)
             {
                 try{
                     if(sourceObject.fileName)
                     {
-                        await fs.cp(path.join(sourceObject.dirName, sourceObject.fileName) ,path.join(destination.dirName, sourceObject.fileName))
+                        await fs.cp(path.join(sourceObject.dirName, sourceObject.fileName) ,path.join(destinationPermissionObject.dirName, sourceObject.fileName))
                     }
                     else
                     {
-                        const sourceDirectoryName = (sourceObject.dirName.split('/').pop())
-                        const destinationDirectory = path.join(destination.dirName, sourceDirectoryName)
+                        const sourceDirectoryBaseName = path.basename(sourceObject.dirName)
+                        const destinationDirectoryName = path.join(destinationPermissionObject.dirName, sourceDirectoryBaseName)
 
                         // Create a directory of the same name as source first
-                        await fs.mkdir(destinationDirectory, {recursive : true})
+                        await fs.mkdir(destinationDirectoryName, {recursive : true})
 
                         // Then copy all the files from the source directory inside the newly created destination directory
-                        await fs.cp(sourceObject.dirName, destinationDirectory, {recursive : true})
+                        await fs.cp(sourceObject.dirName, destinationDirectoryName, {recursive : true})
                     }
                     copyStatus.copied = true
                 }
@@ -211,25 +173,27 @@ export class FileObject{
             else
             {
                 copyStatus.permission = false
-                !(sourceObject.pathExists && destination.pathExists) ? copyStatus.pathExists = false : copyStatus.pathExists = true 
+                !(sourceObject.pathExists && destinationPermissionObject.pathExists) ? copyStatus.pathExists = false : copyStatus.pathExists = true 
             }
             return copyStatus
         })
         return await Promise.all(result)
     }
 
-    async delete(targetPathArray){
-        if(!Array.isArray(targetPathArray))
+    public async delete(target : ReadonlyArray<string>): Promise<Array<NFileObject.IDeleteStatus>>{
+        if(!Array.isArray(target))
         {
             throw Error("TargetPathNotArray")
         }
-        const result = targetPathArray.map(async (targetPath)=>{
+        const result = target.map(async (targetPath)=>{
             const permissionObject = await this.checkPermission(targetPath)
-            const deleteStatus = {
-                ...permissionObject,
-                "dirName" : undefined,
-                "fileName" : undefined,
-                "deleted" : false
+            const deleteStatus: NFileObject.IDeleteStatus = {
+                permission : permissionObject.permission,
+                pathExists : permissionObject.pathExists,
+                exception  : permissionObject.pathExists,
+                deleted    : false,
+                target     : targetPath,
+                error      : ""
             }
             try{
                 if(permissionObject.permission && permissionObject.pathExists && !permissionObject.fileName)
@@ -251,20 +215,22 @@ export class FileObject{
         return await Promise.all(result)
     }
 
-    async move(source, destination){
+    public async move(source : Array<string>, destination: string): Promise<Array<NFileObject.IMoveStatus>>
+    {
         if(!Array.isArray(source) || !destination || !source)
         {
             throw Error("InvalidSourceOrDestination")
         }
         const destinationObject = await this.checkPermission(destination)
-        const result = source.map(async (element) => {
+        const result = source.map(async (element : string) => {
             const sourceObject = await this.checkPermission(element)
-            const moveStatus = {
-                ...sourceObject,
-                "moved" : false,
-                "dirName" : undefined,
-                "fileName" : undefined,
-                "errorMessage" : undefined
+            const moveStatus : NFileObject.IMoveStatus = {
+                permission : sourceObject.permission,
+                pathExists : sourceObject.pathExists,
+                exception  : sourceObject.pathExists,
+                moved      : false,
+                target     : element,
+                error      : ""
             }
             if(sourceObject.permission && sourceObject.pathExists)
             {
@@ -280,13 +246,8 @@ export class FileObject{
                         }
                         else
                         {
-                            const sourceDirectoryNameArray = sourceObject.dirName.split('/')
-                            let sourceDirectoryName = ''
-                            while(sourceDirectoryName.length > 0)
-                            {
-                                sourceDirectoryName = sourceDirectoryNameArray.pop()
-                            }
-                            const destinationDirectory = path.join(destinationObject.dirName, sourceDirectoryName)
+                            const sourceDirectoryName : string = element
+                            const destinationDirectory : string = path.join(destinationObject.dirName, sourceDirectoryName)
 
                             // Create a directory of the same name as source first
                             await fs.mkdir(destinationDirectory, {recursive : true})
