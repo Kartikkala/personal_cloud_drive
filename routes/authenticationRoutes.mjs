@@ -1,47 +1,16 @@
 import express from 'express'
-import passport from 'passport'
-import { registerUser } from '../lib/authentication/utils/userAuthDBUtils.mjs'
+import DatabaseFactory from '../lib/db/database.js'
+import AuthenticationFactory from '../lib/authentication/authenticator.js'
+import { keys_configs } from '../configs/app_config.js'
+
+const authenticationDatabase = DatabaseFactory.getInstance().getAuthenticationDatabase()
+const authenticationFactory = AuthenticationFactory.getInstance(authenticationDatabase, keys_configs)
+const jwtAuthenticator = authenticationFactory.getJwtAuthenticator()
 
 
 const authenticationRouter = express.Router()
 
-authenticationRouter.use(express.json())
-authenticationRouter.use(express.urlencoded({extended : true}))
+authenticationRouter.post('/login', jwtAuthenticator.login)
+authenticationRouter.post('/register', jwtAuthenticator.register)
 
-
-// Using an anonymous wrapper function to access request and response objects inside the
-// callback for passport.authenticate
-
-authenticationRouter.post('/login', (req, res)=>{
-    passport.authenticate('local', (err, user, info)=>{
-        if(err)
-        {
-            console.log("Some error occured in post login route - "+err)
-            return res.status(500).json({"message" : "Internal server error"})
-        }
-        if(!user)
-        {
-            return res.status(401).json({"message": "Invalid login credentials!"})
-        }
-        req.logIn(user, async (err)=>{
-            if(err){
-                console.log("Login error -" + err)
-                return res.status(500).json({"message" : "Internal server error"})
-            }
-            return res.redirect('/api')
-        })
-    })(req, res)
-})
-
-authenticationRouter.post('/register', async (request, response)=>{
-    const userObject = {
-        first_name : request.body.fname,
-        last_name : request.body.lname,
-        username : request.body.username,
-        password : request.body.password
-    }
-    const result = await registerUser(userObject)
-    response.json(result)
-})
-
-export {authenticationRouter, passport}
+export {authenticationRouter, jwtAuthenticator}
