@@ -1,4 +1,5 @@
 // Type specification for fileObject.js
+import { IUserDiskStats } from "../db/FileManager/types.js"
 
 export namespace NFileObject {
     interface PartialPermissionObject{
@@ -69,20 +70,24 @@ export namespace NFileObject {
 
 export namespace NFileObjectManager{
     export interface IFileObjectManager{
-        serviceStatus                                                       : boolean,
-        addNewMountPaths(mountPaths: Array<string>)                         : boolean,
-        refreshMountedDiskStats()                                           : boolean,
-        createAndRegisterFileObjects(userDiskStats : Array<IUserDiskStats>) : boolean,
-        getFileObject(id : string)                                          : NFileObject.IFileObject,
-        allocateSpace(id : string ,storageSpaceinBytes : number)            : Promise<IUserDiskStats | undefined>,
-        
+        serviceStatus                                                                    : boolean,
+        addNewMountPaths(mountPaths: Array<string>)                                      : boolean,
+        refreshMountedDiskStats()                                                        : boolean,
+        createAndMountFileObjects(userDiskStats : Array<IUserDiskStats>)                 : boolean,
+        allocateSpace(email : string ,storageSpaceinBytes : number)                      : Promise<IUserDiskStats | undefined>,
+        changeTotalUserSpace(email : string, newTotalUserSpaceInBytes : number)          : Promise<number | undefined>,
+        checkPermission(email : string, targetPath : string)                            : Promise<NFileObject.IPermissionObject | undefined>,
+        getResourceStatsInDirectory(email : string, targetPath:string)                  : Promise<NFileObject.IContentStatsObject | undefined>,
+        copy(email : string, source:ReadonlyArray<string>, destination:string)          : Promise<Array<NFileObject.ICopyStatus> | undefined>,
+        delete(email : string, target : ReadonlyArray<string>)                          : Promise<Array<NFileObject.IDeleteStatus> | undefined>,
+        move(email : string, source : Array<string>, destination: string)               : Promise<Array<NFileObject.IMoveStatus> | undefined>
     }
 
     export interface IFileObjectMap{
         [id : string] : NFileObject.IFileObject
     }
 
-    export interface IUserDiskStats extends NFileObject.IPartialUserDiskStats{
+    export interface IUserDiskStatsStringId extends NFileObject.IPartialUserDiskStats{
         id : string,
     }
 

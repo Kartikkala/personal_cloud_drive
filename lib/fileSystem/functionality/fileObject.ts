@@ -44,7 +44,6 @@ export class FileObject implements NFileObject.IFileObject{
 
     public changeTotalUserSpace(updatedTotalUserSpaceInBytes : number) : number
     {
-        const difference = updatedTotalUserSpaceInBytes - this.totalUserSpace
         this.totalUserSpace = updatedTotalUserSpaceInBytes
         return updatedTotalUserSpaceInBytes
     }

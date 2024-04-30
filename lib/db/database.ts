@@ -1,7 +1,9 @@
 import AuthenticationDatabase from "./Authentication/db.js"
+import UserDiskStatsDatabase from "./FileManager/db.js"
 import Database from "./helper/db.js"
 import { db_configs } from "../../configs/app_config.js"
 import { IAuthenticationDatabase } from "../../types/lib/db/Authentication/types.js"
+import { IUserDiskStatsDatabase } from "../../types/lib/db/FileManager/types.js"
 
 
 export default class DatabaseFactory{
@@ -9,6 +11,7 @@ export default class DatabaseFactory{
     private static instanceKey = Symbol("uniqueInstanceKey")
     private database
     private readonly AuthenticationDatabase : IAuthenticationDatabase
+    private readonly UsersDiskStatsDatabase : IUserDiskStatsDatabase
     constructor(instance_key : Symbol)
     {
         if(instance_key !== DatabaseFactory.instanceKey)
@@ -26,6 +29,7 @@ export default class DatabaseFactory{
         }
         this.database = new Database(dbName, dbConnectionString, connectionTimeoutDurationMs)
         this.AuthenticationDatabase = new AuthenticationDatabase(this.database, userCollectionName, saltRounds)
+        this.UsersDiskStatsDatabase = new UserDiskStatsDatabase(this.database, "UserDiskStats")
     }    
     public static getInstance()
     {
@@ -38,5 +42,9 @@ export default class DatabaseFactory{
     getAuthenticationDatabase()
     {
         return this.AuthenticationDatabase
+    }
+    getUserDiskStatsDatabase()
+    {
+        return this.UsersDiskStatsDatabase
     }
 }
