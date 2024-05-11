@@ -1,4 +1,5 @@
 // Type specification for fileObject.js
+import { ReadStream, WriteStream } from "fs"
 import { IUserDiskStats } from "../db/FileManager/types.js"
 
 export namespace NFileObject {
@@ -21,13 +22,17 @@ export namespace NFileObject {
         copy(source:ReadonlyArray<string>, destination:string)      : Promise<Array<ICopyStatus>>,
         delete(target : ReadonlyArray<string>)                      : Promise<Array<IDeleteStatus>>,
         move(source : Array<string>, destination: string)           : Promise<Array<IMoveStatus>>,
-        getUserInfo()                                               : IPartialUserDiskStats
+        getUserInfo()                                               : IUserDiskStats,
+        updateUsedDiskSpace(spaceToAddInBytes : number)             : boolean,
+        getCurrentUserDirSize()                                     : Promise<number>,
+        getReadStream(targetPath : string)                          : Promise<ReadStream | undefined>,
+        getWriteStream(targetPath : string, resourceSize : number)  : Promise<WriteStream | undefined>
     }
 
-    export interface IPartialUserDiskStats{
-        userDirName           : string,
-        userDirMountPath      : string,
-        totalUserSpaceInBytes : number
+    export interface IUserDiskStats{
+        USER_HOME             : string,
+        totalUserSpaceInBytes : number,
+        usedSpaceInBytes      : number
     }
 
     export interface IContentObject extends IPermissionObject{
@@ -80,15 +85,16 @@ export namespace NFileObjectManager{
         getResourceStatsInDirectory(email : string, targetPath:string)                  : Promise<NFileObject.IContentStatsObject | undefined>,
         copy(email : string, source:ReadonlyArray<string>, destination:string)          : Promise<Array<NFileObject.ICopyStatus> | undefined>,
         delete(email : string, target : ReadonlyArray<string>)                          : Promise<Array<NFileObject.IDeleteStatus> | undefined>,
-        move(email : string, source : Array<string>, destination: string)               : Promise<Array<NFileObject.IMoveStatus> | undefined>
+        move(email : string, source : Array<string>, destination: string)               : Promise<Array<NFileObject.IMoveStatus> | undefined>,
+        updateUsedDiskSpace(email : string, spaceToAddInBytes : number)                 : boolean,
+        getUserDirSize(email : string)                                                  : Promise<number>,
+        getReadStream(email : string, targetPath : string)                              : Promise<ReadStream | undefined>,
+        getWriteStream(email : string, targetPath : string, resourceSize : number)      : Promise<WriteStream | undefined>,
+        getUserInfo(email : string)                                                     : NFileObject.IUserDiskStats
     }
 
     export interface IFileObjectMap{
         [id : string] : NFileObject.IFileObject
-    }
-
-    export interface IUserDiskStatsStringId extends NFileObject.IPartialUserDiskStats{
-        id : string,
     }
 
     export interface DiskStats{
