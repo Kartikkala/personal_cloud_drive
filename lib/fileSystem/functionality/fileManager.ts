@@ -1,5 +1,5 @@
 import fs from 'fs/promises'
-import filesystem from 'fs'
+import filesystem, { ReadStream, WriteStream } from 'fs'
 import path from 'path'
 import disk from "diskusage"
 import crypto from 'crypto'
@@ -47,7 +47,9 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         this.move = this.move.bind(this)
         this.delete = this.delete.bind(this)
         this.changeTotalUserSpace = this.changeTotalUserSpace.bind(this)
-
+        this.getUserDirSize = this.getUserDirSize.bind(this)
+        this.updateUsedDiskSpace = this.updateUsedDiskSpace.bind(this)
+        this.getUserInfo = this.getUserInfo.bind(this)
     }
 
     public static async getInstance(mountPaths : Array<string>, database : IUserDiskStatsDatabase ,workingDirName? : string)
@@ -251,4 +253,43 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         }
         return fileObject.move(source, destination)
     }
+
+    public getUserInfo(email : string)
+    {
+        return this.getFileObject(email).getUserInfo()
+    }
+
+    public async getUserDirSize(email : string)
+    {
+        return await this.getFileObject(email).getCurrentUserDirSize()
+    }
+
+    public updateUsedDiskSpace(email : string, spaceToAddInBytes : number) : boolean
+    {
+        return this.getFileObject(email).updateUsedDiskSpace(spaceToAddInBytes)
+    }
+
+    public async getReadStream(email : string, targetPath : string) : Promise<ReadStream | undefined>
+    {
+        const fileObject = this.getFileObject(email)
+        {
+            if(!fileObject)
+            {
+                return undefined
+            }
+            return fileObject.getReadStream(targetPath)
+        }
+    }
+
+    public async getWriteStream(email: string, targetPath: string, resourceSize : number): Promise<WriteStream | undefined> {
+        const fileObject = this.getFileObject(email)
+        {
+            if(!fileObject)
+            {
+                return undefined
+            }
+            return fileObject.getWriteStream(targetPath, resourceSize)
+        }
+    }
+
 }

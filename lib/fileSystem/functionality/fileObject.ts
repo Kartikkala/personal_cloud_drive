@@ -1,13 +1,16 @@
 import path from 'path'
 import fs from 'fs/promises'
-import filesystem from 'fs'
+import filesystem, { ReadStream, WriteStream } from 'fs'
 import { NFileObject } from '../../../types/lib/fileSystem/types.js'
+
 
 export class FileObject implements NFileObject.IFileObject{
     private totalUserSpace:number = 0
     private userDirName :string
     private userDirMountPath: string
     private workingDir: string
+    private usedDiskSpace : number
+    private HOME_DIR : string
     constructor(userDirName: string, userDirMountPath: string, workingDir: string ,totalUserSpaceInBytes: number)
     {
         if(!userDirName || !userDirMountPath || !totalUserSpaceInBytes || !workingDir)
@@ -19,6 +22,8 @@ export class FileObject implements NFileObject.IFileObject{
         this.totalUserSpace = totalUserSpaceInBytes
         this.userDirName = userDirName
         this.userDirMountPath = userDirMountPath
+        this.HOME_DIR = path.join(userDirMountPath, workingDir, userDirName)
+        this.usedDiskSpace = filesystem.statSync(path.join(this.userDirMountPath, this.workingDir ,this.userDirName)).size
 
         this.getDirectoryContents = this.getDirectoryContents.bind(this)
         this.getResourceStatsInDirectory = this.getResourceStatsInDirectory.bind(this)
@@ -28,18 +33,40 @@ export class FileObject implements NFileObject.IFileObject{
         this.copy = this.copy.bind(this)
         this.move = this.move.bind(this)
         this.delete = this.delete.bind(this)
+        this.updateUsedDiskSpace = this.updateUsedDiskSpace.bind(this)
+        this.getCurrentUserDirSize = this.getCurrentUserDirSize.bind(this)
+        this.getReadStream = this.getReadStream.bind(this)
+        this.getWriteStream = this.getWriteStream.bind(this)
         
         // TODO
         /*
             1. User level space will be handled in individual file opearations. Create functionality, that only allows any
             of the copy operations only if user has enough space to do that operation.
+
+            2. Create methods that provide access to filehandles / streams so that other utilities, like streaming and down-
+            -loading can leverage these methods to create readable/ writable/ duplex streams in a simple, secure and permitted 
+            way.
         */
     }
 
 
-    public getUserInfo() : NFileObject.IPartialUserDiskStats
+    public getUserInfo() : NFileObject.IUserDiskStats
     {
-        return {"totalUserSpaceInBytes" : this.totalUserSpace , "userDirName" : this.userDirName, "userDirMountPath" : this.userDirMountPath}
+        return {
+            "USER_HOME" : this.HOME_DIR,
+            "totalUserSpaceInBytes" : this.totalUserSpace, 
+            "usedSpaceInBytes" : this.usedDiskSpace
+        }
+    }
+
+    public updateUsedDiskSpace(spaceToAddInBytes : number) : boolean
+    {
+        if(this.usedDiskSpace + spaceToAddInBytes < this.totalUserSpace)
+        {
+            this.usedDiskSpace += spaceToAddInBytes
+            return true
+        } 
+        return false
     }
 
     public changeTotalUserSpace(updatedTotalUserSpaceInBytes : number) : number
@@ -148,23 +175,43 @@ export class FileObject implements NFileObject.IFileObject{
                 try{
                     if(sourceObject.fileName)
                     {
-                        await fs.cp(path.join(sourceObject.dirName, sourceObject.fileName) ,path.join(destinationPermissionObject.dirName, sourceObject.fileName))
+                        const sourceFileStats = await fs.stat(path.join(sourceObject.dirName, sourceObject.fileName))
+                        const requiredSpace = sourceFileStats.size
+                        if(this.updateUsedDiskSpace(requiredSpace))
+                        {
+                            await fs.cp(path.join(sourceObject.dirName, sourceObject.fileName) ,path.join(destinationPermissionObject.dirName, sourceObject.fileName))
+                        }
+                        else
+                        {
+                            throw new Error("OutOfSpace")
+                        } 
                     }
                     else
                     {
                         const sourceDirectoryBaseName = path.basename(sourceObject.dirName)
                         const destinationDirectoryName = path.join(destinationPermissionObject.dirName, sourceDirectoryBaseName)
-
-                        // Create a directory of the same name as source first
-                        await fs.mkdir(destinationDirectoryName, {recursive : true})
-
-                        // Then copy all the files from the source directory inside the newly created destination directory
-                        await fs.cp(sourceObject.dirName, destinationDirectoryName, {recursive : true})
+                        const sourceDirStats = await fs.stat(sourceObject.dirName)
+                        const requiredSpace = sourceDirStats.size
+                        if(this.updateUsedDiskSpace(requiredSpace))
+                        {
+                            // Create a directory of the same name as source first
+                            await fs.mkdir(destinationDirectoryName, {recursive : true})
+                            // Then copy all the files from the source directory inside the newly created destination directory
+                            await fs.cp(sourceObject.dirName, destinationDirectoryName, {recursive : true})
+                        }
+                        else
+                        {
+                            throw new Error("OutOfSpace")
+                        }
                     }
                     copyStatus.copied = true
                 }
                 catch(exception)
                 {
+                    // Set the space to the size of user's directory
+                    // in case of errors in copy operation
+                    const userDirStats = await fs.stat(this.HOME_DIR)
+                    this.usedDiskSpace = userDirStats.size
                     // Set exception to true in case of exception
                     copyStatus.exception = true
                 }
@@ -195,23 +242,35 @@ export class FileObject implements NFileObject.IFileObject{
                 error      : ""
             }
             try{
+                let deleted = false
                 if(permissionObject.permission && permissionObject.pathExists && !permissionObject.fileName)
                 {
+                    const dirSize = (await fs.stat(permissionObject.dirName)).size
                     await fs.rmdir(permissionObject.dirName, {recursive : true})
+                    deleted = this.updateUsedDiskSpace(-dirSize)
                 }
                 else if(permissionObject.permission && permissionObject.pathExists && permissionObject.fileName)
                 {
+                    const fileSize = (await fs.stat(path.join(permissionObject.dirName, permissionObject.fileName))).size
                     await fs.rm(path.join(permissionObject.dirName, permissionObject.fileName))
+                    deleted = this.updateUsedDiskSpace(-fileSize)
                 }
-                deleteStatus.deleted = permissionObject.permission && permissionObject.pathExists
+                deleteStatus.deleted = deleted
             }
             catch(exception)
             {
+                // Recalculate used disk stats on error for safety
+                this.usedDiskSpace = (await fs.stat(this.HOME_DIR)).size
                 deleteStatus.exception = true
             }
             return deleteStatus
         })
         return await Promise.all(result)
+    }
+
+    public async getCurrentUserDirSize() : Promise<number>
+    {
+        return (await fs.stat(this.HOME_DIR)).size
     }
 
     public async move(source : Array<string>, destination: string): Promise<Array<NFileObject.IMoveStatus>>
@@ -269,6 +328,49 @@ export class FileObject implements NFileObject.IFileObject{
             return moveStatus
         })
         return await Promise.all(result)
+    }
+
+    public async getReadStream(targetPath : string) : Promise<ReadStream | undefined>
+    {
+        let result = undefined
+        const permissionObject = await this.checkPermission(targetPath)
+        if(permissionObject.permission && permissionObject.pathExists && permissionObject.fileName)
+        {
+            const readStream = 
+            result = filesystem.createReadStream(path.join(permissionObject.dirName, permissionObject.fileName))
+            readStream.on('error', (e)=>{
+                readStream.destroy(e)
+                console.error("Error in read stream")
+                console.error(e)
+            })
+        }
+        return result
+    }
+
+    public async getWriteStream(targetPath : string, resourceSize : number) : Promise <WriteStream | undefined>
+    {
+        // Pipe read stream via a different transform stream that measures
+        // ETA, remaining bytes to recieve and download %. Well for the writestream,
+        // it is required that the readstream that is being piped to this writestream
+        // would get intercepted by that same kind of transform stream
+        let result = undefined
+        const permissionObject = await this.checkPermission(targetPath)
+        if(permissionObject.permission && permissionObject.fileName)
+        {
+            if(this.updateUsedDiskSpace(resourceSize))
+            {
+                const writeStream = 
+                result = filesystem.createWriteStream(path.join(permissionObject.dirName, permissionObject.fileName))
+                result.on('error', async (e)=>{
+                    // Recalculate used disk stats on error for safety
+                    this.usedDiskSpace = (await fs.stat(this.HOME_DIR)).size
+                    writeStream.destroy()
+                    console.error(e)
+                    console.error('Error in write stream')
+                })
+            }
+        }
+        return result
     }
 
 }

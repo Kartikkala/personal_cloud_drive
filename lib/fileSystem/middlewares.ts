@@ -8,10 +8,10 @@ export class FileObjectManagerMiddleware{
 
     // TODO : Add proper await statements wherever required in each of the functions of this class
     // (mostly in the request.user and request.body properties)
-    private fileObjectManager : NFileObjectManager.IFileObjectManager
+    private _fileManager : NFileObjectManager.IFileObjectManager
     private static instance : null | FileObjectManagerMiddleware = null
     private static instanceKey : Symbol = Symbol("UniqueFileManagerMiddlewaresKey")
-
+    private static _initialized : boolean
     constructor(instanceKey : Symbol, fileObjectManager : NFileObjectManager.IFileObjectManager ,mountPaths : Array<string>, database : IUserDiskStatsDatabase, workingDirName? : string){
         if(instanceKey !== FileObjectManagerMiddleware.instanceKey)
         {
@@ -21,12 +21,32 @@ export class FileObjectManagerMiddleware{
         {
             throw new Error("File manager / database object / mountPaths missing")
         }
-        this.fileObjectManager = fileObjectManager
+        FileObjectManagerMiddleware.initialized = true
+        this._fileManager = fileObjectManager
         this.copyMiddleware = this.copyMiddleware.bind(this)
         this.deleteMiddleware = this.deleteMiddleware.bind(this)
         this.moveMiddleware = this.moveMiddleware.bind(this)
         this.getResourceStatsInDirectoryMiddleware = this.getResourceStatsInDirectoryMiddleware.bind(this)
         this.addNewUserMiddleware = this.addNewUserMiddleware.bind(this)
+    }
+
+    public get fileManager()
+    {
+        return this._fileManager
+    }
+
+    private set fileManager(value : NFileObjectManager.IFileObjectManager)
+    {
+        this._fileManager = value
+    }
+
+    public static get initialized() : boolean
+    {
+        return FileObjectManagerMiddleware._initialized
+    }
+    private static set initialized(value : boolean)
+    {
+        this._initialized = value
     }
 
     public static async getInstance(mountPaths : Array<string>, database : IUserDiskStatsDatabase, workingDirName? : string)
@@ -38,6 +58,7 @@ export class FileObjectManagerMiddleware{
         }
         return this.instance
     }
+
     async copyMiddleware(request : Request, response : Response, next : NextFunction)
     {
         if(!request.user)
@@ -48,7 +69,7 @@ export class FileObjectManagerMiddleware{
         let destination = request.body.destination
         const user = request.user
 
-        const result = await this.fileObjectManager.copy(user.email, source, destination)
+        const result = await this.fileManager.copy(user.email, source, destination)
         
         response.locals.result = result
         return next()
@@ -66,7 +87,7 @@ export class FileObjectManagerMiddleware{
             return next()
         }
         let targetPathArray = Array.isArray(targetPath) ? targetPath : [targetPath]
-        const result = await this.fileObjectManager.delete(request.user.email, targetPathArray)
+        const result = await this.fileManager.delete(request.user.email, targetPathArray)
 
         response.locals.result = result
         return next()
@@ -81,7 +102,7 @@ export class FileObjectManagerMiddleware{
         let source = Array.isArray(request.body.source) ? request.body.source : [request.body.source]
         
         let destination = await request.body.destination
-        const result = await this.fileObjectManager.move(request.user.email, source, destination)
+        const result = await this.fileManager.move(request.user.email, source, destination)
 
         response.locals.result = result
         return next()
@@ -99,7 +120,7 @@ export class FileObjectManagerMiddleware{
             return next()
         }
 
-        const result = await this.fileObjectManager.getResourceStatsInDirectory(request.user.email, targetPath)
+        const result = await this.fileManager.getResourceStatsInDirectory(request.user.email, targetPath)
 
         response.locals.result =  result
         return next()
@@ -116,7 +137,7 @@ export class FileObjectManagerMiddleware{
         // or is using an admin system. For now, any user can allow access to himself by
         // just calling this middleware
 
-        const userDiskStats = await this.fileObjectManager.allocateSpace(request.user.email, 1073741824)
+        const userDiskStats = await this.fileManager.allocateSpace(request.user.email, 1073741824)
         response.locals.result = userDiskStats
         return next()
     }
