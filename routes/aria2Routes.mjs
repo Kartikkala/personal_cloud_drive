@@ -1,113 +1,124 @@
 import express from 'express'
-import ws from 'ws'
-import nodefetch from 'node-fetch'
-import path from 'path'
-import {Aria2Helper} from '../lib/fileTransfer/aria2Helper.mjs'
-import Aria2 from 'aria2'
-import {aria2_configs} from "../configs/app_config.js"
-import { app_configs } from '../configs/app_config.js'
-import {getInactiveDownloads} from '../lib/authentication/utils/userInfoUtils.mjs'
+import DatabaseFactory from '../lib/db/database.js'
+import { FileTransferFactory } from '../lib/fileTransfer/transfer.js'
+import { fileManagerMiddleware } from './filesystemRoutes.mjs'
 
-
-const aria2cOptions = {
-    WebSocket: ws, fetch: nodefetch, host: aria2_configs.host,
-    port: aria2_configs.port,
-    secure: aria2_configs.secure,
-    secret: aria2_configs.secret,
-    path: aria2_configs.path,
-}
-const aria2Client = new Aria2(aria2cOptions, aria2_configs.downloadStatusUpdateDurationInSeconds)
-const aria2c = new Aria2Helper(aria2Client)
+const inactiveDownloadsDatabase = DatabaseFactory.getInstance().getInactiveDownloadsDatabase()
+const aria2Client = (await FileTransferFactory.getInstance(inactiveDownloadsDatabase, fileManagerMiddleware.fileManager)).server
 const ariaRouter = express.Router()
-// Get each user's dir and download in that dir
-const rootDir = path.resolve(app_configs.rootPath)
+
 const responseObject = {
-    "guid" : undefined,
+    "guid" : '',
     "valid" : false, 
     "active": false,
-    "exception" : null
+    "exception" : false
 }
 
 const failedResponseObject = {
     "valid" : false, 
     "active": false,
-    "exception" : null
+    "exception" : false
 }
 
 
 ariaRouter.post("/downloadFileServer", async (request, response)=>{
     const user = request.user
+    if(!user)
+    {
+        return response.send("Unauthorized")
+    }
     const {uri} = request.body
-    const userDir = path.join(rootDir, user.userDir, aria2_configs.downloads_dir)
-    let guid = undefined
+    if(!uri)
+    {
+        return response.json({"valid" : false, "error" : true})
+    }
+    const res = await aria2Client.downloadWithURI(user.email, uri, '/Downloads')
+    response.send(res)
 
-    try{
-        guid =  await aria2c.downloadWithURI([uri], user, userDir)
-    }
-    catch(exception)
+
+})
+
+ariaRouter.post("/downloadFileTorrent", async (request, response)=>{
+    const user = request.user
+    if(!user)
     {
-        responseObject.exception = exception.message
-        failedResponseObject.exception = exception.message
+        return response.send("Unauthorized")
     }
-    if(guid === undefined)
+    const {torrentFilePath} = request.body
+    if(!torrentFilePath)
     {
-        response.json(failedResponseObject)
+        return response.json({"valid" : false, "error" : true})
     }
-    else{
-        responseObject.guid = guid
-        responseObject.valid = true
-        responseObject.exception ? responseObject.active = false : responseObject.active = true
-        response.send(responseObject)
-    }
+
+    let result = await aria2Client.downloadWithTorrent(user.email, torrentFilePath , '/Downloads')
+    response.send(result)
 })
 
 ariaRouter.get("/cancelDownload/:guid", async (request, response)=>{
-    const guid = request.params.guid
-    if(await aria2c.cancelDownload(guid) === undefined)
+    const user = request.user
+    if(!user)
     {
-        response.json(failedResponseObject)
+        return response.send("Unauthorized")
+    }
+    const guid = request.params.guid
+    if((await aria2Client.cancelDownload(user.email ,guid)) === undefined)
+    {
+        return response.json(failedResponseObject)
     }
     else{
         responseObject.guid = guid
         responseObject.valid = true
         responseObject.active = false
-        response.json(responseObject)
+        return response.json(responseObject)
     }
 })
 
 ariaRouter.get("/pauseDownload/:guid", async (request, response)=>{
+    const user = request.user
+    if(!user)
+    {
+        return response.send("Unauthorized")
+    }
     const guid = request.params.guid
-    if(await aria2c.pauseDownload(guid) === undefined){
-        response.json(failedResponseObject)
+    if(await aria2Client.pauseDownload(user.email ,guid) === undefined){
+        return response.json(failedResponseObject)
     }
     else{
         responseObject.guid = guid
         responseObject.valid = true
         responseObject.active = false
-        response.json(responseObject)
+        return response.json(responseObject)
     }
 })
 
 ariaRouter.get("/resumeDownload/:guid", async (request, response)=>{
+    const user = request.user
+    if(!user)
+    {
+        return response.send("Unauthorized")
+    }
     const guid = request.params.guid
-    if(await aria2c.resumeDownload(guid) === undefined){
-        response.json(failedResponseObject)
+    if(await aria2Client.resumeDownload(user.email, guid) === undefined){
+        return response.json(failedResponseObject)
     }
     else{
         responseObject.guid = guid
         responseObject.valid = true
         responseObject.active = true
-        response.json(responseObject)
+        return response.json(responseObject)
     }
 })
 
 ariaRouter.get("/getInactiveDownloads", async (request, response)=>{
     const user = request.user
-    const inactiveDownloads = await getInactiveDownloads(user._id)
-    const inactiveDownloadsStatus = await aria2c.getUserDownloadStatus(inactiveDownloads, ["status","errorCode","errorMessage","files"])
-    if(inactiveDownloadsStatus)
+    if(!user)
     {
-        response.json(inactiveDownloadsStatus)
+        return response.send("Unauthorized")
+    }
+    const inactiveDownloads = await aria2Client.getInactiveDownloads(user.email)
+    if(inactiveDownloads)
+    {
+        response.json(inactiveDownloads)
     }
     else
     {
@@ -115,4 +126,4 @@ ariaRouter.get("/getInactiveDownloads", async (request, response)=>{
     }
 })
 
-export { ariaRouter, aria2c }
+export { ariaRouter }

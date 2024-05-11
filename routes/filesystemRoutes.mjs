@@ -6,13 +6,12 @@ import DatabaseFactory from '../lib/db/database.js'
 const filesystemRouter = express.Router()
 const userDiskStatsDatabase = DatabaseFactory.getInstance().getUserDiskStatsDatabase()
 
-const fileManager = await FileObjectManagerMiddleware.getInstance(app_configs.mountPaths, userDiskStatsDatabase)
+const fileManagerMiddleware = await FileObjectManagerMiddleware.getInstance(app_configs.mountPaths, userDiskStatsDatabase)
 
-
-filesystemRouter.use("/ls", fileManager.getResourceStatsInDirectoryMiddleware)
-filesystemRouter.use("/copy", fileManager.copyMiddleware)
-filesystemRouter.use("/delete", fileManager.deleteMiddleware)
-filesystemRouter.use("/move", fileManager.moveMiddleware)
+filesystemRouter.use("/ls", fileManagerMiddleware.getResourceStatsInDirectoryMiddleware)
+filesystemRouter.use("/copy", fileManagerMiddleware.copyMiddleware)
+filesystemRouter.use("/delete", fileManagerMiddleware.deleteMiddleware)
+filesystemRouter.use("/move", fileManagerMiddleware.moveMiddleware)
 
 filesystemRouter.post("/ls", (request, response) => {
     const content = response.locals.result
@@ -52,4 +51,4 @@ filesystemRouter.post("/move", (request, response)=>{
 })
 
 
-export {filesystemRouter, fileManager}
+export {filesystemRouter, fileManagerMiddleware}
