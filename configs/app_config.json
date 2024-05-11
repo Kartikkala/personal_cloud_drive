@@ -9,7 +9,7 @@
         "downloads_dir" : "Aria2_Downloads",
         "downloadStatusUpdateDurationInSeconds" : 3
     },
-    "user_auth_db_configs":
+    "db_configs":
     {
         "user_auth_db_name" : "personal_drive",
         "user_auth_db_collection_name" : "users",
@@ -17,17 +17,6 @@
         "connection_timeout_ms" : 5000,
         "number_of_salt_rounds" : 12,
         "admin_storage_space" : 32212254720
-    },
-    "session_configs":
-    {
-        "sessionDBname" : "personal_drive",
-        "session_collection_name" : "sessions",
-        "session_store_secret" : "wuei2$nho$#23s",
-        "cookie_configs" : 
-        {
-            "secure" : false,
-            "expire_time_ms" : 86400000
-        }
     },
     "app_configs":
     {
