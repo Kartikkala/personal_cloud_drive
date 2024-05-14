@@ -4,7 +4,6 @@ import DatabaseFactory from '../lib/db/database.js'
 import { fileManagerMiddleware } from './filesystemRoutes.mjs'
 import busboy from 'busboy'
 import { videoStream } from '../lib/http-streaming/streaming.js'
-import fs from 'fs'
 
 const fileTransferRouter = express.Router()
 

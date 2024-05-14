@@ -15,7 +15,7 @@ import { authenticationRouter, jwtAuthenticator } from './routes/authenticationR
 
 // Import objects from lib directory
 
-// import {authenticate, updateDownloadStatus} from './lib/socketioMiddlewares/socketMiddlewares.mjs'
+import { updateDownloadStatus} from './lib/socketioMiddlewares/socketMiddlewares.js'
 
 
 // Configurations
@@ -24,9 +24,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const frontendApp = path.join(__dirname, "/static/", "/downloadingWebsite/")
 
-
-// Check if admin user exists in database and create
-// admin user if not present
 
 
 // Object creations and initializations
@@ -59,7 +56,7 @@ const port = process.env.NODE_ENV === 'test'? 8000 : 80
 const server = app.listen(port, '0.0.0.0', () => { console.log("Listening on port "+port+"...") })
 const io = new Server(server)
 
-// io.use(authenticate)
-// io.use(updateDownloadStatus)
+io.use(jwtAuthenticator.authenticateSocketIo)
+io.use(updateDownloadStatus)
 
 export {server, app}

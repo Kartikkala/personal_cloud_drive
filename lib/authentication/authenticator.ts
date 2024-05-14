@@ -32,8 +32,7 @@ export default class AuthenticationFactory{
         }
         return this.instance
     }
-
-    public getJwtAuthenticator()
+    public get jwtAuthenticator() : JwtAuthenticator
     {
         return this.jwtAuthInstance
     }

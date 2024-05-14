@@ -1,3 +1,4 @@
+import EventEmitter from "events"
 import { Aria2DownloadStatus } from "maria2"
 export interface IAria2DownloadStatus extends Omit<Aria2DownloadStatus, 'files' | 'dir'>
 {
@@ -17,7 +18,7 @@ export interface IDownloadResult extends Omit<ITorrentDownloadResult, "torrentPa
 export interface ICancelDownloadResult extends Omit<IDownloadResult, "sizeLimitExceeded">{}
 
 
-export interface IAria2Helper{
+export interface IAria2Helper extends EventEmitter{
     getUserDownloads(email : string) : Set<string> | undefined,
     addUserDownload(email : string, guid : string) : void,
     removeUserDownload(email : string, guid : string) : boolean,

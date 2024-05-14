@@ -5,7 +5,7 @@ import { keys_configs } from '../configs/app_config.js'
 
 const authenticationDatabase = DatabaseFactory.getInstance().getAuthenticationDatabase()
 const authenticationFactory = AuthenticationFactory.getInstance(authenticationDatabase, keys_configs)
-const jwtAuthenticator = authenticationFactory.getJwtAuthenticator()
+const jwtAuthenticator = authenticationFactory.jwtAuthenticator
 
 
 const authenticationRouter = express.Router()

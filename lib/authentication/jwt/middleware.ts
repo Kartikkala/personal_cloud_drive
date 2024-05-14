@@ -8,6 +8,7 @@ import { IJwtAuthenticator } from "../../../types/lib/authentication/jwt/middlew
 // Dependencies
 
 import { JwtAuthentication } from "./helper/jwtAuthentication.js"
+import { Socket } from "socket.io"
 
 
 export default class JwtAuthenticator extends JwtAuthentication implements IJwtAuthenticator{
@@ -18,6 +19,7 @@ export default class JwtAuthenticator extends JwtAuthentication implements IJwtA
         this.register = this.register.bind(this)
         this.authenticate = this.authenticate.bind(this)
         this.isAuthenticated = this.isAuthenticated.bind(this)
+        this.authenticateSocketIo = this.authenticateSocketIo.bind(this)
     }
 
     public async login(request: Request, response: Response): Promise<void> {
@@ -75,5 +77,26 @@ export default class JwtAuthenticator extends JwtAuthentication implements IJwtA
             return next()
         }
         response.status(401).json({success : false, message : " Unauthorized!"})
+    }
+
+    public async authenticateSocketIo(socket : Socket, next : Function)
+    {
+        try{
+            const token = socket.handshake.headers.authorization
+            if(token)
+            {
+                const payload = await this.verifyJwt(token)
+                if(payload)
+                {
+                    socket.handshake.auth = payload
+                    return next()
+                }
+            }
+        }
+        catch(e)
+        {
+            console.error(e)
+            next(e)
+        }
     }
 }
