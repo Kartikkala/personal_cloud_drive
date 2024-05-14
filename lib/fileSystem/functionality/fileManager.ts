@@ -42,6 +42,7 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         this.createAndMountFileObjects = this.createAndMountFileObjects.bind(this)
         this.refreshMountedDiskStats = this.refreshMountedDiskStats.bind(this)
         this.checkPermission = this.checkPermission.bind(this)
+        this.getResourceStats = this.getResourceStats.bind(this)
         this.getResourceStatsInDirectory = this.getResourceStatsInDirectory.bind(this)
         this.copy = this.copy.bind(this)
         this.move = this.move.bind(this)
@@ -212,6 +213,17 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         return fileObject.checkPermission(targetPath)
     }
 
+    public async getResourceStats(email : string, targetPath : string) : Promise<NFileObject.IFileStats | undefined>
+    {
+        const fileObject = this.getFileObject(email)
+        if(!fileObject)
+        {
+            return undefined
+        }
+
+        return fileObject.getResourceStats(targetPath)
+    }
+
     public async getResourceStatsInDirectory( email : string ,targetPath:string) : Promise<NFileObject.IContentStatsObject | undefined>
     {
         const fileObject = this.getFileObject(email)
@@ -269,16 +281,14 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         return this.getFileObject(email).updateUsedDiskSpace(spaceToAddInBytes)
     }
 
-    public async getReadStream(email : string, targetPath : string) : Promise<ReadStream | undefined>
+    public async getReadStream(email : string, targetPath : string, start? : number, end? : number) : Promise<ReadStream | undefined>
     {
         const fileObject = this.getFileObject(email)
+        if(!fileObject)
         {
-            if(!fileObject)
-            {
-                return undefined
-            }
-            return fileObject.getReadStream(targetPath)
+            return undefined
         }
+        return fileObject.getReadStream(targetPath, start, end)
     }
 
     public async getWriteStream(email: string, targetPath: string, resourceSize : number): Promise<WriteStream | undefined> {

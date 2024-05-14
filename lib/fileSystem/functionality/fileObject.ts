@@ -26,6 +26,7 @@ export class FileObject implements NFileObject.IFileObject{
         this.usedDiskSpace = filesystem.statSync(path.join(this.userDirMountPath, this.workingDir ,this.userDirName)).size
 
         this.getDirectoryContents = this.getDirectoryContents.bind(this)
+        this.getResourceStats = this.getResourceStats.bind(this)
         this.getResourceStatsInDirectory = this.getResourceStatsInDirectory.bind(this)
         this.checkPermission = this.checkPermission.bind(this)
         this.getUserInfo = this.getUserInfo.bind(this)
@@ -37,16 +38,6 @@ export class FileObject implements NFileObject.IFileObject{
         this.getCurrentUserDirSize = this.getCurrentUserDirSize.bind(this)
         this.getReadStream = this.getReadStream.bind(this)
         this.getWriteStream = this.getWriteStream.bind(this)
-        
-        // TODO
-        /*
-            1. User level space will be handled in individual file opearations. Create functionality, that only allows any
-            of the copy operations only if user has enough space to do that operation.
-
-            2. Create methods that provide access to filehandles / streams so that other utilities, like streaming and down-
-            -loading can leverage these methods to create readable/ writable/ duplex streams in a simple, secure and permitted 
-            way.
-        */
     }
 
 
@@ -119,6 +110,34 @@ export class FileObject implements NFileObject.IFileObject{
             }
         }
         return contentObject
+    }
+
+    public async getResourceStats(targetPath : string) : Promise<NFileObject.IFileStats | undefined>
+    {
+        const permissionObject : NFileObject.IPermissionObject = await this.checkPermission(targetPath)
+        if(permissionObject.permission && permissionObject.pathExists)
+        {
+            let resourceStat = undefined
+            let basename = undefined
+            if(permissionObject.fileName)
+            {
+                resourceStat = await fs.stat(path.join(permissionObject.dirName, permissionObject.fileName))
+                basename = permissionObject.fileName
+            }
+            else{
+                resourceStat = await fs.stat(permissionObject.dirName)
+                basename = path.basename(permissionObject.dirName)
+            }
+            const statObject = {
+                name : basename, 
+                size : resourceStat.size, 
+                birthtime : resourceStat.birthtime, 
+                isDirectory : resourceStat.isDirectory(), 
+                isFile : resourceStat.isFile()
+            }
+            return statObject
+        }
+        return undefined
     }
 
 
@@ -330,19 +349,25 @@ export class FileObject implements NFileObject.IFileObject{
         return await Promise.all(result)
     }
 
-    public async getReadStream(targetPath : string) : Promise<ReadStream | undefined>
+    public async getReadStream(targetPath : string, start? : number, end? : number) : Promise<ReadStream | undefined>
     {
-        let result = undefined
+        let result : undefined | ReadStream = undefined
         const permissionObject = await this.checkPermission(targetPath)
         if(permissionObject.permission && permissionObject.pathExists && permissionObject.fileName)
         {
-            const readStream = 
-            result = filesystem.createReadStream(path.join(permissionObject.dirName, permissionObject.fileName))
+            const options: any = {}
+            if(start !== null && end !== null && start !== undefined && end !==undefined)
+            {
+                options.start = start
+                options.end = end
+            }
+            const readStream = filesystem.createReadStream(path.join(permissionObject.dirName, permissionObject.fileName), options)
             readStream.on('error', (e)=>{
                 readStream.destroy(e)
                 console.error("Error in read stream")
                 console.error(e)
             })
+            result = readStream
         }
         return result
     }
