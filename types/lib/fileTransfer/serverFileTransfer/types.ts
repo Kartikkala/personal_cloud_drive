@@ -19,10 +19,6 @@ export interface ICancelDownloadResult extends Omit<IDownloadResult, "sizeLimitE
 
 
 export interface IAria2Helper extends EventEmitter{
-    getUserDownloads(email : string) : Set<string> | undefined,
-    addUserDownload(email : string, guid : string) : void,
-    removeUserDownload(email : string, guid : string) : boolean,
-    addStatusUpdateEventEmitter(email : string) : void,
     downloadWithTorrent(email : string, torrentFilePath : string, downloadPath : string) : Promise<ITorrentDownloadResult>,
     downloadWithURI(email : string, uri : string, downloadPath : string) : Promise<IDownloadResult>,
     pauseDownload(email : string, guid : string) : Promise<undefined | string>,

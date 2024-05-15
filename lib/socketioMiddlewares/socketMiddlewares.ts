@@ -1,11 +1,12 @@
 import { Socket } from "socket.io"
-import { fileTransfer } from "../../routes/fileTransferRoutes.mjs"
+import { FileTransferFactory } from "../fileTransfer/transfer.js"
 
-async function updateDownloadStatus(socket : Socket, next : Function ){
-    fileTransfer.server.on("statusUpdate_"+socket.handshake.auth.email, (downloadStatus)=>{
-        socket.emit("statusUpdate",downloadStatus)
-    })
-    next()
+
+export function updateDownloadStatus(fileTransfer : FileTransferFactory){
+    return (socket : Socket, next : Function)=>{
+        fileTransfer.server.on("statusUpdate_"+socket.handshake.auth.email, (downloadStatus)=>{
+            socket.emit("statusUpdate",downloadStatus)
+        })
+        next()
+    }
 }
-
-export { updateDownloadStatus}

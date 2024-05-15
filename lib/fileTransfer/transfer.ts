@@ -1,7 +1,6 @@
 import { NFileObjectManager } from "../../types/lib/fileSystem/types.js"
 import { ClientFileTransfer } from "./clientTransfer/clientTransfer.js"
 import { aria2c } from "./serverTransfer/serverDownload.js"
-import { aria2_configs } from "../../configs/app_config.js"
 import { InactiveDowloadsDb } from "../../types/lib/db/Downloads/types.js"
 import { IAria2Helper } from "../../types/lib/fileTransfer/serverFileTransfer/types.js"
 
@@ -17,20 +16,13 @@ export class FileTransferFactory{
         {
             throw new Error("Please use FileTransferFactory.getInstance() to create an instance of this class")
         }
-        const aria2Options = {
-            host : aria2_configs.host, 
-            path : aria2_configs.path, 
-            port : aria2_configs.port,
-            secret : aria2_configs.secret,
-            secure : aria2_configs.secure
-        }
         this.client = new ClientFileTransfer(fileManager)
         this.server = aria2c
     }
 
-    public static async getInstance(database : InactiveDowloadsDb, fileManager : NFileObjectManager.IFileObjectManager)
+    public static async getInstance(database : InactiveDowloadsDb, fileManager : NFileObjectManager.IFileObjectManager, aria2_configs : any)
     {
-        const aria2 = await aria2c(database, fileManager, 3000)
+        const aria2 = await aria2c(database, fileManager, aria2_configs)
         if(!this.instance)
         {
             this.instance = new FileTransferFactory(this.instanceKey, aria2 , fileManager)
