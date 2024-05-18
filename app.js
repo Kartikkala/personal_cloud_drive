@@ -3,6 +3,7 @@ import express from 'express'
 import path, {dirname} from 'path'
 import { fileURLToPath } from 'url'
 import { Server } from 'socket.io'
+import {config} from 'dotenv'
 
 
 // Import routes 
@@ -23,6 +24,7 @@ import { FileTransferFactory } from './lib/fileTransfer/transfer.js'
 // Import configs
 
 import { app_configs, keys_configs, db_configs, aria2_configs } from './configs/app_config.js'
+import AuthorisationMiddlewareFactory from './lib/authorisation/index.js'
 
 // Configurations
 
@@ -30,10 +32,15 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const frontendApp = path.join(__dirname, "/static/", "/downloadingWebsite/")
 
-// Environment variables
-
+// Environment variables and configuration
+config({path : './.env'})
 const dbConnectionString = process.env.MONGO_CONNECTION_STRING
-
+const senderEmail = process.env.USER_EMAIL_ADDRESS
+const senderEmailPassword = process.env.USER_EMAIL_PASSWORD
+const emailServiceName = app_configs.emailServiceName
+const emailServicHostAddress = app_configs.emailServiceHostAddress
+const emailServicePortNumber = app_configs.emailServicePort
+const secure = app_configs.emailServiceSSLEnable
 
 
 // Object creations and initializations
@@ -43,14 +50,15 @@ const app = express()
 // Lib object creations
 
 const database =  DatabaseFactory.getInstance(dbConnectionString, db_configs)
-const authFactory = AuthenticationFactory.getInstance(database.getAuthenticationDatabase(), keys_configs)
+const authenticationFactory = AuthenticationFactory.getInstance(database.getAuthenticationDatabase(), keys_configs)
+const authorizationFactory = AuthorisationMiddlewareFactory.getInstance(emailServiceName, emailServicHostAddress, emailServicePortNumber, secure, senderEmail, senderEmailPassword)
 const fileObjectManagerMiddleware = await FileObjectManagerMiddleware.getInstance(app_configs.mountPaths, database.getUserDiskStatsDatabase())
 const fileTransferFactory = await FileTransferFactory.getInstance(database.getInactiveDownloadsDatabase(), fileObjectManagerMiddleware.fileManager, aria2_configs)
-const jwtAuthenticator = authFactory.jwtAuthenticator
+const jwtAuthenticator = authenticationFactory.jwtAuthenticator
 
 // Router creations
 
-const authenticationRouter = getAuthenticationRouter(authFactory)
+const authenticationRouter = getAuthenticationRouter(authenticationFactory, authorizationFactory)
 const filesystemRouter = getFileSystemRouter(fileObjectManagerMiddleware)
 const fileTransferRouter = getFileTransferRouter(fileTransferFactory, fileObjectManagerMiddleware.fileManager, 8e+7)
 const aria2Router = getAria2Router(fileTransferFactory.server)
