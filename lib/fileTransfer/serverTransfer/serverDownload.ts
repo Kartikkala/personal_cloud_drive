@@ -81,28 +81,34 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
         const result: IDownloadResult = { valid: false, guid: undefined, sizeLimitExceeded: false, error: false }
         try {
             let fileSize = undefined
-            if (uri.startsWith("magnet:")) {
-                // Uri is a magnet link
-                const userDir = this.fileManager.getUserInfo(email).USER_HOME
-                fileSize = await this.getFileSizeFromMagnet(uri, path.join(userDir, downloadPath))
-                result.valid = true
+            const user = this.fileManager.getUserInfo(email)
+            if(user)
+            {
+                if (uri.startsWith("magnet:")) {
+                    // Uri is a magnet link
+                    const userDir = user.USER_HOME
+                    fileSize = await this.getFileSizeFromMagnet(uri, path.join(userDir, downloadPath))
+                    result.valid = true
+                }
+                if (!fileSize) {
+                    fileSize = await ufs(uri)
+                    result.valid = true
+                }
+                // Check if space is available
+                if (this.fileManager.updateUsedDiskSpace(email, fileSize)) {
+                    const userDir = user.USER_HOME
+                    result.guid = await this.aria2c.addUri(this.version, [uri], { dir: path.join(userDir, downloadPath) })
+                    this.addUserDownload(email, result.guid)
+                    this.addStatusUpdateEventEmitter(email)
+                    console.log("Download started with GUID: " + result.guid)
+                }
+                else {
+                    result.sizeLimitExceeded = true
+                    throw new Error("NoSpaceAvailable")
+                }
             }
-            if (!fileSize) {
-                fileSize = await ufs(uri)
-                result.valid = true
-            }
-            // Check if space is available
-            if (this.fileManager.updateUsedDiskSpace(email, fileSize)) {
-                const userDir = this.fileManager.getUserInfo(email).USER_HOME
-                result.guid = await this.aria2c.addUri(this.version, [uri], { dir: path.join(userDir, downloadPath) })
-                this.addUserDownload(email, result.guid)
-
-                this.addStatusUpdateEventEmitter(email)
-                console.log("Download started with GUID: " + result.guid)
-            }
-            else {
-                result.sizeLimitExceeded = true
-                throw new Error("NoSpaceAvailable")
+            else{
+                throw new Error('Invalid User specified')
             }
         }
         catch (e) {
@@ -119,26 +125,32 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
             const torrentFileObject = await this.fileManager.checkPermission(email, torrentFilePath)
 
             if (torrentFileObject) {
-                if (torrentFileObject.permission && torrentFileObject.pathExists && torrentFileObject.fileName) {
-                    result.torrentPathExists = true
-                    const userDir = this.fileManager.getUserInfo(email).USER_HOME
-                    const fullDownloadPath = path.join(userDir, downloadPath)
-                    const file = await fs.readFile(path.join(torrentFileObject.dirName, torrentFileObject.fileName))
-                    const torrentContents = files(file)
-                    result.valid = true
-                    // If size of file to be downloaded is lesser than available space
-                    if (this.fileManager.updateUsedDiskSpace(email, torrentContents.length)) {
-                        // Follow the torrent file and download contents from it
-                        result.guid = await this.aria2c.addTorrent(this.version, file.toString('base64'), [], { dir: fullDownloadPath })
-                        this.addUserDownload(email, result.guid)
+                const user = this.fileManager.getUserInfo(email)
+                if(user)
+                {
+                    if (torrentFileObject.permission && torrentFileObject.pathExists && torrentFileObject.fileName) {
+                        result.torrentPathExists = true
+                        const userDir = user.USER_HOME
+                        const fullDownloadPath = path.join(userDir, downloadPath)
+                        const file = await fs.readFile(path.join(torrentFileObject.dirName, torrentFileObject.fileName))
+                        const torrentContents = files(file)
+                        result.valid = true
 
-                        this.addStatusUpdateEventEmitter(email)
+                        // If size of file to be downloaded is lesser than available space
+                        if (this.fileManager.updateUsedDiskSpace(email, torrentContents.length)) {
+                            // Follow the torrent file and download contents from it
+                            result.guid = await this.aria2c.addTorrent(this.version, file.toString('base64'), [], { dir: fullDownloadPath })
+                            this.addUserDownload(email, result.guid)
+    
+                            this.addStatusUpdateEventEmitter(email)
+                        }
+                        else {
+                            result.sizeLimitExceeded = true
+                        }
+    
                     }
-                    else {
-                        result.sizeLimitExceeded = true
-                    }
-
                 }
+                
             }
         }
         catch (e) {
