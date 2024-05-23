@@ -50,6 +50,6 @@ export default class AuthorisationMiddlewareFactory{
         {
             return next()
         }
-        return response.send(401).json({message : "Invalid OTP"})
+        return response.status(401).json({message : "Invalid OTP"})
     }
 }
