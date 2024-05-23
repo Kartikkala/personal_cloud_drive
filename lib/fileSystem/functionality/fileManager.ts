@@ -72,8 +72,16 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         }
         try{
             mountPaths.forEach((mountPath : string)=>{
-                const absolutePath = filesystem.realpathSync(mountPath)
-                filesystem.accessSync(absolutePath)
+                let absolutePath = undefined
+                try{
+                    absolutePath = filesystem.realpathSync(mountPath)
+                }
+                catch(e)
+                {
+                    console.error("\x1b[31m",`Error mounting :\x1b[34m${mountPath} \x1b[31m`)
+                    console.log("\x1b[33m", `Hint : Check if the path exists`, "\x1b[0m")
+                    process.exit(-1)
+                }
                 const validatedPathArray = absolutePath.split("/")
                 if(validatedPathArray.length > 1 && !mountedPathsRoot.has(validatedPathArray[1]))
                 {
@@ -83,14 +91,16 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
                 }
                 else
                 {
-                    throw new Error("/ cannot be mounted")
+                    throw new Error(absolutePath)
                 }
             })
             return true
         }
-        catch(e)
+        catch(e : any)
         {
-            console.error(e)
+            console.log(`Path not valid to mount: ${e.message}\n`)
+            console.log(`Please check if you have not specified same path 2 times.`)
+            process.exit(-1)
         }
         return false
     }
@@ -121,6 +131,7 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         {
             userDiskStats = [userDiskStats]
         }
+        console.log("\x1b[33m",'Info : Fetching filesystem stats from database for all users...', "\x1b[0m")
 
         userDiskStats.forEach((userStats : IUserDiskStats)=>{
             if(!userStats.email || !userStats.userDirName || !userStats.userDirMountPath || !userStats.totalSpace)

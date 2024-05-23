@@ -23,7 +23,16 @@ export class FileObject implements NFileObject.IFileObject{
         this.userDirName = userDirName
         this.userDirMountPath = userDirMountPath
         this.HOME_DIR = path.join(userDirMountPath, workingDir, userDirName)
-        this.usedDiskSpace = filesystem.statSync(path.join(this.userDirMountPath, this.workingDir ,this.userDirName)).size
+        const pathToMount = path.join(this.userDirMountPath, this.workingDir ,this.userDirName)
+        try{
+            this.usedDiskSpace = filesystem.statSync(pathToMount).size
+        }
+        catch(e)
+        {
+            console.error("\x1b[31m",'Error : Path does not exist : ',pathToMount, '\n')
+            console.error("Fatal : Could not create user object due to invalid path \n", "\x1b[0m")
+            process.exit(-1)
+        }
 
         this.getDirectoryContents = this.getDirectoryContents.bind(this)
         this.getResourceStats = this.getResourceStats.bind(this)
