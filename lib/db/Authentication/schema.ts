@@ -4,11 +4,16 @@ import { IDatabase } from "../../../types/lib/db/UserMangement/types.js"
 
 
 
-export function userSchema(mongoose : IDatabase) : Schema
+export function userSchema(mongoose : IDatabase) : Schema<IUserDocument>
 {
     return new mongoose.Schema<IUserDocument>({
         name : String,
-        email : String, 
+        email : {
+            type : String,
+            required : true,
+            unique : true,
+            index : true
+        }, 
         passwordHash : String,
         admin : Boolean,
         subscriptionId : String

@@ -25,7 +25,8 @@ export interface IAuthenticationDatabase{
 
 export interface INewUserResult{
     success : boolean
-    message : "UserAlreadyExists" | "DatabaseError" | "UserCreationSuccessful"
+    message : "UserAlreadyExists" | "DatabaseError" | "UserCreationSuccessful",
+    user? : IUserDocument
 }
 
 export interface IUserVerificationResult{

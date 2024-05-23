@@ -16,7 +16,7 @@ export namespace NFileObject {
 
     export interface IFileObject{
         checkPermission(targetPath : string)                        : Promise<IPermissionObject>,
-        getResourceStats(targetPath : string)                       : Promise<NFileObject.IFileStats | undefined>,
+        getResourceStats(targetPath : string)                       : Promise<NFileObject.IFileStats | null>,
         getDirectoryContents(targetPath: string)                    : Promise<IContentObject>,
         getResourceStatsInDirectory(targetPath:string)              : Promise<IContentStatsObject>,
         changeTotalUserSpace(updatedTotalUserSpaceInBytes : number) : number,
@@ -26,8 +26,8 @@ export namespace NFileObject {
         getUserInfo()                                               : IUserDiskStats,
         updateUsedDiskSpace(spaceToAddInBytes : number)             : boolean,
         getCurrentUserDirSize()                                     : Promise<number>,
-        getReadStream(targetPath : string, start? : number, end? : number) : Promise<ReadStream | undefined>,
-        getWriteStream(targetPath : string, resourceSize : number)  : Promise<WriteStream | undefined>
+        getReadStream(targetPath : string, start? : number, end? : number) : Promise<ReadStream | null>,
+        getWriteStream(targetPath : string, resourceSize : number)  : Promise<WriteStream | null>
     }
 
     export interface IUserDiskStats{
@@ -80,26 +80,21 @@ export namespace NFileObjectManager{
         addNewMountPaths(mountPaths: Array<string>)                                      : boolean,
         refreshMountedDiskStats()                                                        : boolean,
         createAndMountFileObjects(userDiskStats : Array<IUserDiskStats>)                 : boolean,
-        allocateSpace(email : string ,storageSpaceinBytes : number)                      : Promise<IUserDiskStats | undefined>,
+        createNewUser(email : string, storageSpaceinBytes : number)                      : Promise<IUserDiskStats | undefined | null>,
         changeTotalUserSpace(email : string, newTotalUserSpaceInBytes : number)          : Promise<number | undefined>,
         checkPermission(email : string, targetPath : string)                            : Promise<NFileObject.IPermissionObject | undefined>,
-        getResourceStats(email : string, targetPath : string)                           : Promise<NFileObject.IFileStats | undefined>,
+        getResourceStats(email : string, targetPath : string)                           : Promise<NFileObject.IFileStats | undefined | null>,
         getResourceStatsInDirectory(email : string, targetPath:string)                  : Promise<NFileObject.IContentStatsObject | undefined>,
         copy(email : string, source:ReadonlyArray<string>, destination:string)          : Promise<Array<NFileObject.ICopyStatus> | undefined>,
         delete(email : string, target : ReadonlyArray<string>)                          : Promise<Array<NFileObject.IDeleteStatus> | undefined>,
         move(email : string, source : Array<string>, destination: string)               : Promise<Array<NFileObject.IMoveStatus> | undefined>,
-        updateUsedDiskSpace(email : string, spaceToAddInBytes : number)                 : boolean,
-        getUserDirSize(email : string)                                                  : Promise<number>,
-        getReadStream(email : string, targetPath : string, start? : number, end? : number) : Promise<ReadStream | undefined>,
-        getWriteStream(email : string, targetPath : string, resourceSize : number)      : Promise<WriteStream | undefined>,
-        getUserInfo(email : string)                                                     : NFileObject.IUserDiskStats
+        updateUsedDiskSpace(email : string, spaceToAddInBytes : number)                 : boolean | undefined,
+        getReadStream(email : string, targetPath : string, start? : number, end? : number) : Promise<ReadStream | undefined | null>,
+        getWriteStream(email : string, targetPath : string, resourceSize : number)      : Promise<WriteStream | undefined | null>,
+        getUserInfo(email : string)                                                     : NFileObject.IUserDiskStats | undefined
     }
 
 
-
-    export interface IFileObjectMap{
-        [id : string] : NFileObject.IFileObject
-    }
 
     export interface DiskStats{
         available : number,

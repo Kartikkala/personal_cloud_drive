@@ -30,31 +30,24 @@ export default class AuthenticationDatabase implements IAuthenticationDatabase{
         const connectionStatus = await this.database.connectToDatabase()
         if(connectionStatus){
             try{
-                const oldUser = await this.userCollection.findOne({email : user.email})
-                if(!oldUser)
+                if(!admin)
                 {
-                    if(!admin)
-                    {
-                        admin = false
-                    }
-                    const passHash = await bcrypt.hash(user.password, this.saltRounds)
-                    const newUser : IUserDocument = {
-                        email : user.email,
-                        name :  user.name,
-                        subscriptionId : null,
-                        passwordHash : passHash,
-                        admin : admin
-                    }
-                    await this.userCollection.create(newUser)
-                    result.success = true
-                    result.message = "UserCreationSuccessful"
+                    admin = false
                 }
-                else{
-                    result.message = "UserAlreadyExists"
+                const passHash = await bcrypt.hash(user.password, this.saltRounds)
+                const newUser : IUserDocument = {
+                    email : user.email,
+                    name :  user.name,
+                    subscriptionId : null,
+                    passwordHash : passHash,
+                    admin : admin
                 }
+                result.user = await this.userCollection.create(newUser)
+                result.success = true
+                result.message = "UserCreationSuccessful"
             }
-            catch(e){   
-                result.message = "DatabaseError"
+            catch(e : any){   
+                result.message  = "UserAlreadyExists"
                 console.error(e)
             }
         }

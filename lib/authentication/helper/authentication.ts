@@ -37,6 +37,7 @@ export class Authentication{
         const result : IRegistrationResult = {
             success                 : false,
             validCredentials        : false, 
+            user                    : undefined
         }
 
         if(!user.name || !user.email || !user.password)
@@ -52,6 +53,7 @@ export class Authentication{
         const registrationResult = await this.database.addUser(user, false)
         result.success = registrationResult.success
         result.message = registrationResult.message
+        result.user = registrationResult.user
         return result
     }
 

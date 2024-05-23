@@ -1,3 +1,5 @@
+import { IUserDocument } from "../../db/Authentication/types.js"
+
 export interface IUser{
     email : string,
     name : string,
@@ -6,5 +8,6 @@ export interface IUser{
 export interface IRegistrationResult{
     success            : boolean,
     validCredentials   : boolean,
+    user?              : IUserDocument
     message?           : "UserAlreadyExists" | "DatabaseError" | "UserCreationSuccessful"
 }

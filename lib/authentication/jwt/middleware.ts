@@ -38,22 +38,19 @@ export default class JwtAuthenticator extends JwtAuthentication implements IJwtA
         }
     }
 
-    public async register(request: Request, response: Response): Promise<void> {
+    public async register(request: Request, response: Response, next: NextFunction): Promise<void> {
         const name = request.body.name
         const email = request.body.email
         const password = request.body.password
-        let responseStatus = 200
         const user = {
             name : name,
             email : email,
             password : password
         }
         const result = await this.registration(user)
-        if(result.message !== "UserCreationSuccessful")
-        {
-            responseStatus = 500
-        }
-        response.status(responseStatus).send(result)
+        request.user = result.user
+        response.locals.registrationResult = result
+        next()
     }
 
     public async authenticate(request: Request, response: Response, next: NextFunction): Promise<void> {
