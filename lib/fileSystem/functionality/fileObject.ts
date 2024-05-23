@@ -112,7 +112,7 @@ export class FileObject implements NFileObject.IFileObject{
         return contentObject
     }
 
-    public async getResourceStats(targetPath : string) : Promise<NFileObject.IFileStats | undefined>
+    public async getResourceStats(targetPath : string) : Promise<NFileObject.IFileStats | null>
     {
         const permissionObject : NFileObject.IPermissionObject = await this.checkPermission(targetPath)
         if(permissionObject.permission && permissionObject.pathExists)
@@ -137,7 +137,7 @@ export class FileObject implements NFileObject.IFileObject{
             }
             return statObject
         }
-        return undefined
+        return null
     }
 
 
@@ -349,9 +349,9 @@ export class FileObject implements NFileObject.IFileObject{
         return await Promise.all(result)
     }
 
-    public async getReadStream(targetPath : string, start? : number, end? : number) : Promise<ReadStream | undefined>
+    public async getReadStream(targetPath : string, start? : number, end? : number) : Promise<ReadStream | null>
     {
-        let result : undefined | ReadStream = undefined
+        let result : null | ReadStream = null
         const permissionObject = await this.checkPermission(targetPath)
         if(permissionObject.permission && permissionObject.pathExists && permissionObject.fileName)
         {
@@ -372,13 +372,13 @@ export class FileObject implements NFileObject.IFileObject{
         return result
     }
 
-    public async getWriteStream(targetPath : string, resourceSize : number) : Promise <WriteStream | undefined>
+    public async getWriteStream(targetPath : string, resourceSize : number) : Promise <WriteStream | null>
     {
         // Pipe read stream via a different transform stream that measures
         // ETA, remaining bytes to recieve and download %. Well for the writestream,
         // it is required that the readstream that is being piped to this writestream
         // would get intercepted by that same kind of transform stream
-        let result = undefined
+        let result = null
         const permissionObject = await this.checkPermission(targetPath)
         if(permissionObject.permission && permissionObject.fileName)
         {

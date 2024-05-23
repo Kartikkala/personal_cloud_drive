@@ -13,7 +13,7 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
     private database : IUserDiskStatsDatabase
     private mountedPaths : Array<string> = []
     private workingDir : string
-    private fileObjectPool : NFileObjectManager.IFileObjectMap = {}
+    private fileObjectPool : Map<string, NFileObject.IFileObject> = new Map<string, NFileObject.IFileObject>()
     public serviceStatus : boolean = false
     private diskStats : NFileObjectManager.IDiskStatsByMountPath = {}
     private provisionedDiskUsageByMountPath : NFileObjectManager.IProvisionedDiskUsageByMountPath = {}
@@ -37,8 +37,8 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
 
         this.addNewMountPaths = this.addNewMountPaths.bind(this)
         this.allocateSpace = this.allocateSpace.bind(this)
+        this.createNewUser = this.createNewUser.bind(this)
         this.deallocateSpace = this.deallocateSpace.bind(this)
-        this.getFileObject = this.getFileObject.bind(this)
         this.createAndMountFileObjects = this.createAndMountFileObjects.bind(this)
         this.refreshMountedDiskStats = this.refreshMountedDiskStats.bind(this)
         this.checkPermission = this.checkPermission.bind(this)
@@ -48,7 +48,6 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         this.move = this.move.bind(this)
         this.delete = this.delete.bind(this)
         this.changeTotalUserSpace = this.changeTotalUserSpace.bind(this)
-        this.getUserDirSize = this.getUserDirSize.bind(this)
         this.updateUsedDiskSpace = this.updateUsedDiskSpace.bind(this)
         this.getUserInfo = this.getUserInfo.bind(this)
     }
@@ -129,26 +128,14 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
                 throw new Error("Invalid user disk stat")
             }
             const fileObject = new FileObject(userStats.userDirName, userStats.userDirMountPath, this.workingDir, userStats.totalSpace)
-            this.fileObjectPool[userStats.email.toString()] = fileObject
+            this.fileObjectPool.set(userStats.email.toString(), fileObject)
         })   
         return true
     }
 
-    private getFileObject(email : string) : NFileObject.IFileObject
-    {
-        if(!email || typeof email !== 'string')
-        {
-            throw new Error("Invalid user email specified in get file object")
-        }
-        return this.fileObjectPool[email]
-    }
 
-    public async allocateSpace(email : string ,storageSpaceinBytes : number) : Promise<IUserDiskStats | undefined>
+    private async allocateSpace(email : string ,storageSpaceinBytes : number) : Promise<IUserDiskStats | undefined>
     {
-        if(!storageSpaceinBytes || !email)
-        {
-            throw new Error("Invalid email or storage space passed to allocate space")
-        }
         // Use uuid as a random unique name for user dir
         const userDirName : string = crypto.randomUUID().concat(crypto.randomUUID())
         this.refreshMountedDiskStats()
@@ -189,117 +176,133 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         return undefined
     }
 
+    public async createNewUser(email : string, storageSpaceinBytes : number) : Promise<IUserDiskStats | undefined | null>
+    {
+        if(!this.fileObjectPool.has(email))
+        {
+            return await this.allocateSpace(email, storageSpaceinBytes)
+        }
+        return null
+    }
+
     public deallocateSpace(userDirName : string, userDirMountPath : string){
 
     }
 
     public async changeTotalUserSpace(email : string, newTotalUserSpaceInBytes : number)
     {
-        let updatedSpace = undefined
-        if(await this.database.modifyTotalUserSpace(email, newTotalUserSpaceInBytes))
+        const userFileObject = this.fileObjectPool.get(email)
+        if(userFileObject)
         {
-            updatedSpace = this.getFileObject(email.toString()).changeTotalUserSpace(newTotalUserSpaceInBytes)
+            if(await this.database.modifyTotalUserSpace(email, newTotalUserSpaceInBytes))
+            {
+                return userFileObject.changeTotalUserSpace(newTotalUserSpaceInBytes)
+            }
+            else{
+                throw new Error('DatabaseError')
+            }
         }
-        return updatedSpace
+        return undefined
     }
 
     public async checkPermission(email : string, targetPath : string)
     {
-        const fileObject = this.getFileObject(email)
-        if(!fileObject)
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
         {
-            return undefined
+            return fileObject.checkPermission(targetPath)
         }
-        return fileObject.checkPermission(targetPath)
+        return undefined
     }
 
-    public async getResourceStats(email : string, targetPath : string) : Promise<NFileObject.IFileStats | undefined>
+    public async getResourceStats(email : string, targetPath : string) : Promise<NFileObject.IFileStats | undefined | null>
     {
-        const fileObject = this.getFileObject(email)
-        if(!fileObject)
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
         {
-            return undefined
+            return fileObject.getResourceStats(targetPath)
         }
-
-        return fileObject.getResourceStats(targetPath)
+        
+        return undefined
     }
 
     public async getResourceStatsInDirectory( email : string ,targetPath:string) : Promise<NFileObject.IContentStatsObject | undefined>
     {
-        const fileObject = this.getFileObject(email)
-        if(!fileObject)
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
         {
-            return undefined
+            return fileObject.getResourceStatsInDirectory(targetPath)
         }
-
-        return fileObject.getResourceStatsInDirectory(targetPath)
-        
+        return undefined
     }
 
     public async copy(email : string, source:ReadonlyArray<string>, destination:string) : Promise<Array<NFileObject.ICopyStatus> | undefined>
     {
-        const fileObject = this.getFileObject(email)
-        if(!fileObject)
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
         {
-            return undefined
+            return fileObject.copy(source, destination)
         }
-        return fileObject.copy(source, destination)
+        return undefined
     }
 
     public async delete(email : string,target : ReadonlyArray<string>): Promise<Array<NFileObject.IDeleteStatus> | undefined>
     {
-        const fileObject = this.getFileObject(email)
-        if(!fileObject)
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
         {
-            return undefined
+            return fileObject.delete(target)
         }
-        return fileObject.delete(target)
+        return undefined
     }
 
     public async move(email : string ,source : Array<string>, destination: string): Promise<Array<NFileObject.IMoveStatus> | undefined>
     {
-        const fileObject = this.getFileObject(email)
-        if(!fileObject)
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
         {
-            return undefined
+            return fileObject.move(source, destination)
         }
-        return fileObject.move(source, destination)
+        return undefined
     }
 
     public getUserInfo(email : string)
     {
-        return this.getFileObject(email).getUserInfo()
-    }
-
-    public async getUserDirSize(email : string)
-    {
-        return await this.getFileObject(email).getCurrentUserDirSize()
-    }
-
-    public updateUsedDiskSpace(email : string, spaceToAddInBytes : number) : boolean
-    {
-        return this.getFileObject(email).updateUsedDiskSpace(spaceToAddInBytes)
-    }
-
-    public async getReadStream(email : string, targetPath : string, start? : number, end? : number) : Promise<ReadStream | undefined>
-    {
-        const fileObject = this.getFileObject(email)
-        if(!fileObject)
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
         {
-            return undefined
+            return fileObject.getUserInfo()
         }
-        return fileObject.getReadStream(targetPath, start, end)
+        return undefined
     }
 
-    public async getWriteStream(email: string, targetPath: string, resourceSize : number): Promise<WriteStream | undefined> {
-        const fileObject = this.getFileObject(email)
+    public updateUsedDiskSpace(email : string, spaceToAddInBytes : number) : boolean | undefined
+    {
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
         {
-            if(!fileObject)
-            {
-                return undefined
-            }
+            return fileObject.updateUsedDiskSpace(spaceToAddInBytes)
+        }
+        return undefined
+    }
+
+    public async getReadStream(email : string, targetPath : string, start? : number, end? : number) : Promise<ReadStream | undefined | null>
+    {
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
+        {
+            return fileObject.getReadStream(targetPath, start, end)
+        }
+        return undefined
+    }
+
+    public async getWriteStream(email: string, targetPath: string, resourceSize : number): Promise<WriteStream | undefined | null> {
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
+        {
             return fileObject.getWriteStream(targetPath, resourceSize)
         }
+        return undefined
     }
 
 }

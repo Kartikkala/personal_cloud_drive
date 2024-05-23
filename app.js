@@ -58,7 +58,7 @@ const jwtAuthenticator = authenticationFactory.jwtAuthenticator
 
 // Router creations
 
-const authenticationRouter = getAuthenticationRouter(authenticationFactory, authorizationFactory)
+const authenticationRouter = getAuthenticationRouter(authenticationFactory, authorizationFactory, fileObjectManagerMiddleware)
 const filesystemRouter = getFileSystemRouter(fileObjectManagerMiddleware)
 const fileTransferRouter = getFileTransferRouter(fileTransferFactory, fileObjectManagerMiddleware.fileManager, 8e+7)
 const aria2Router = getAria2Router(fileTransferFactory.server)

@@ -133,12 +133,28 @@ export class FileObjectManagerMiddleware{
         {
             return next()
         }
-        // TODO : Create a condition that checks if the app is using subscription system
-        // or is using an admin system. For now, any user can allow access to himself by
-        // just calling this middleware
-
-        const userDiskStats = await this.fileManager.allocateSpace(request.user.email, 1073741824)
-        response.locals.result = userDiskStats
+        
+        const userCreationResult = {
+            alreadyExists : false,
+            databaseError : false,
+            success : false,
+            allocatedSpace : 0
+        }
+        const userDiskStats = await this.fileManager.createNewUser(request.user.email, 1073741824)
+        if(userDiskStats === null)
+        {
+            userCreationResult.alreadyExists = true
+        }
+        else if(userDiskStats === undefined)
+        {
+            userCreationResult.databaseError = true
+        }
+        else
+        {
+            userCreationResult.success = true
+            userCreationResult.allocatedSpace = userDiskStats.totalSpace
+        }
+        response.locals.userDriveDetails = userCreationResult
         return next()
     }
 
