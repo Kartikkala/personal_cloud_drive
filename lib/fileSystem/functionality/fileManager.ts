@@ -59,6 +59,7 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
             this.instance = new FileObjectManager(this.instanceKey, mountPaths, database, workingDirName)
         }
         const userDirStats = await database.getDiskStatsForAllUsers()
+        console.log("\x1b[33m",'Info : Fetching filesystem stats from database for all users...', "\x1b[0m")
         this.instance.createAndMountFileObjects(userDirStats)
         return this.instance
     }
@@ -131,7 +132,6 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         {
             userDiskStats = [userDiskStats]
         }
-        console.log("\x1b[33m",'Info : Fetching filesystem stats from database for all users...', "\x1b[0m")
 
         userDiskStats.forEach((userStats : IUserDiskStats)=>{
             if(!userStats.email || !userStats.userDirName || !userStats.userDirMountPath || !userStats.totalSpace)

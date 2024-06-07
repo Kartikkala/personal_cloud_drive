@@ -113,7 +113,6 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
         }
         catch (e) {
             result.error = true
-            console.error(e)
         }
         return result
     }
@@ -196,8 +195,8 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
                     this.removeUserDownload(email, guid)
                     await this.database.addInactiveDownload(email, guid, true)
                 }
-                this.emit('statusUpdate_' + email.toString(), download)
             }
+            this.emit('statusUpdate_' + email.toString(), downloadStatusArray)
             if (downloads.size === 0) {
                 clearInterval(statusUpdateInterval)
             }
