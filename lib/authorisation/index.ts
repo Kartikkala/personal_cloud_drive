@@ -31,10 +31,9 @@ export default class AuthorisationMiddlewareFactory{
 
     public async generateAndSendRegistrationOtpMiddleware(request : Request, response : Response, next : NextFunction)
     {
-        // Add Max OTP expiration time and minDuration for retrying new OTP generation
-        if(!request.body.email || !request.body.password || !request.body.name)
+        if(!request.body.email)
         {
-            return response.status(400).json({message : "Username, email and password are required!"})
+            return response.status(400).json({message : "Email is required"})
         }
         const result = await this._authorizer.generateAndSendOtp(request.body.email, this.senderName, this.otpLength)
         return response.status(200).json(result)

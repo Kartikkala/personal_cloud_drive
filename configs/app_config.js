@@ -1,4 +1,4 @@
-import configData from "./app_config.json" assert {type : "json"}
+import configData from "./app_config.json" with {type : "json"}
 
 const aria2_configs = configData.aria2_configs
 const db_configs = configData.db_configs
