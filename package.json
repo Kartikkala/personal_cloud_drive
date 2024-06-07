@@ -5,7 +5,7 @@
   "description": "This is the first package I am creating using npm init and express js",
   "main": "app.js",
   "scripts": {
-    "start": "NODE_ENV=deployment MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING sudo node app.js",
+    "start": "tsc && NODE_ENV=deployment MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING sudo node out/app.js",
     "test": ". '/etc/environment' && JUNIT_REPORT_PATH=/report.xml NODE_ENV=test MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING mocha --exit --colors --reporter mocha-jenkins-reporter 'test/*.spec.js'"
   },
   "author": "KartikKala",
@@ -45,7 +45,7 @@
     "socket.io": "^4.7.4",
     "stream-throttle": "^0.1.3",
     "url-file-size": "^1.0.5-1",
-    "webtorrent": "^2.2.1",
+    "webtorrent": "^2.3.4",
     "ws": "^8.13.0"
   },
   "devDependencies": {
