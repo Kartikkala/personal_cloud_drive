@@ -35,7 +35,7 @@ export default class Database extends Mongoose implements IDatabase{
                 console.log("Connected to database!")
             }
             else {
-                console.log("Database already connected!")
+                console.log("Executing database operation!")
             }
             return true
         }

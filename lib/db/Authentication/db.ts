@@ -60,7 +60,6 @@ export default class AuthenticationDatabase implements IAuthenticationDatabase{
         {   
             try{
                 const userDocument : any = await this.userCollection.findOne({email : email})
-                console.log(userDocument)
                 const validPassword = userDocument.passwordHash ? await bcrypt.compare(password, userDocument.passwordHash) : false
                 if(userDocument && validPassword)
                 {

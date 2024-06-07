@@ -65,7 +65,6 @@ export default class UserDiskStatsDatabase implements IUserDiskStatsDatabase{
         {
             try{
                 const update = await this.userDiskStatsCollection.findOneAndUpdate({email : email}, {totalSpace : newTotalUserSpace})
-                console.log(update)
                 result = true
             }
             catch(e)
@@ -83,7 +82,6 @@ export default class UserDiskStatsDatabase implements IUserDiskStatsDatabase{
         {
             try{
                 const deleteStatus = await this.userDiskStatsCollection.findOneAndDelete({email : email})
-                console.log(deleteStatus)
                 result = true
             }
             catch(e)
