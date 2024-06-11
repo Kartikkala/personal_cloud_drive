@@ -54,7 +54,7 @@ export default class JwtAuthenticator extends JwtAuthentication implements IJwtA
     }
 
     public async authenticate(request: Request, response: Response, next: NextFunction): Promise<void> {
-        const token = request.header("Authorization")
+        const token = request.header("authorization")
         try{
             const payload = token ? await this.verifyJwt(token) : undefined
             const user = payload ? payload : undefined

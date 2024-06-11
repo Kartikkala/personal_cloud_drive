@@ -191,7 +191,7 @@ export class FileObject implements NFileObject.IFileObject{
             const copyStatus : NFileObject.ICopyStatus = {
                 permission : sourceObject.permission,
                 pathExists : sourceObject.pathExists,
-                exception  : sourceObject.pathExists,
+                exception  : false,
                 copied     : false,
                 target     : element,
                 error      : ""
@@ -264,7 +264,7 @@ export class FileObject implements NFileObject.IFileObject{
             const deleteStatus: NFileObject.IDeleteStatus = {
                 permission : permissionObject.permission,
                 pathExists : permissionObject.pathExists,
-                exception  : permissionObject.pathExists,
+                exception  : false,
                 deleted    : false,
                 target     : targetPath,
                 error      : ""
@@ -313,7 +313,7 @@ export class FileObject implements NFileObject.IFileObject{
             const moveStatus : NFileObject.IMoveStatus = {
                 permission : sourceObject.permission,
                 pathExists : sourceObject.pathExists,
-                exception  : sourceObject.pathExists,
+                exception  : false,
                 moved      : false,
                 target     : element,
                 error      : ""
@@ -352,7 +352,6 @@ export class FileObject implements NFileObject.IFileObject{
                 }
             }
             moveStatus.permission = sourceObject.permission && destinationObject.permission
-            moveStatus.pathExists = sourceObject.pathExists && destinationObject.pathExists
             return moveStatus
         })
         return await Promise.all(result)

@@ -14,7 +14,7 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
     router.post("/downloadFileClient", async (request, response) => {
         if(!request.user)
         {
-            return response.send("Unauthorized")
+            return response.status(401).send("Unauthorized")
         }
         const filePath = request.body.targetPath
         const fileStream = await fileTransfer.client.downloadFile(request.user.email, filePath, maxFileTransferSpeed)
@@ -22,17 +22,17 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
         {
             return fileStream.pipe(response)
         }
-        return response.send("Permission denied / error / path does not exist")
+        return response.status(404).send("Permission denied / error / path does not exist")
     })
     
     router.post("/uploadFile", async(request, response)=>{
         if(!request.user)
         {
-            return response.send("Unauthorized")
+            return response.status(401).send("Unauthorized")
         }
         if(!request.headers.filesize || Array.isArray(request.headers.filesize))
         {
-            return response.send('Invalid fileSize header')
+            return response.status(400).send('Invalid fileSize header')
         }
         const email = request.user.email
         const fileSize = parseInt(request.headers.filesize)
