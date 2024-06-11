@@ -46,11 +46,11 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
         request.pipe(bb)
     })
     
-    router.post('/stream', async (request, response)=>{
+    router.get('/stream/:filepath', async (request, response)=>{
         const user = request.user
         if(user)
         {   
-            const streamObject = await streamer.stream(user.email, request.body.filepath, request.headers)
+            const streamObject = await streamer.stream(user.email, request.params.filepath, request.headers)
             if(streamObject)
             {
                 if(streamObject.start !== undefined && streamObject.end !==undefined)
