@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.custom-progress::-webkit-progress-value {
+    background-color: #f0f4f8;
+    border-top-left-radius: 9999px;
+    border-bottom-left-radius: 9999px;
+    /* Set the background color for the progress bar */
+}
+
+progress::-webkit-progress-bar {
+    border-radius: 9999px;
+}
+
+#file::-webkit-progress-bar {
+    border-radius: 0;
+}
+
+#file::-webkit-progress-value {
+    background-color: blue;
+
+}
