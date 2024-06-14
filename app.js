@@ -4,6 +4,7 @@ import path, {dirname} from 'path'
 import { fileURLToPath } from 'url'
 import { Server } from 'socket.io'
 import {config} from 'dotenv'
+import cors from 'cors'
 
 
 // Import routes 
@@ -25,6 +26,7 @@ import { FileTransferFactory } from './lib/fileTransfer/transfer.js'
 
 import { app_configs, keys_configs, db_configs, aria2_configs } from './configs/app_config.js'
 import AuthorisationMiddlewareFactory from './lib/authorisation/index.js'
+import getVideoStreamingRouter from './routes/sreamingRoute.js'
 
 // Configurations
 
@@ -60,7 +62,8 @@ const jwtAuthenticator = authenticationFactory.jwtAuthenticator
 
 const authenticationRouter = getAuthenticationRouter(authenticationFactory, authorizationFactory, fileObjectManagerMiddleware)
 const filesystemRouter = getFileSystemRouter(fileObjectManagerMiddleware)
-const fileTransferRouter = getFileTransferRouter(fileTransferFactory, fileObjectManagerMiddleware.fileManager, 8e+7)
+const fileTransferRouter = getFileTransferRouter(fileTransferFactory, 8e+7)
+const streamingRouter = getVideoStreamingRouter( fileObjectManagerMiddleware.fileManager)
 const aria2Router = getAria2Router(fileTransferFactory.server)
 
 // App middleware configuration
@@ -68,23 +71,23 @@ const aria2Router = getAria2Router(fileTransferFactory.server)
 app.disable('x-powered-by')
 app.use(express.json())
 app.use(express.urlencoded({extended : true}))
+app.use(cors())
+app.use('/',express.static(frontendApp))
 
 
 // Routes
 
 app.use('/api', authenticationRouter)
-app.use("/api", jwtAuthenticator.authenticate , jwtAuthenticator.isAuthenticated, express.static(frontendApp))
 app.use('/api/aria', jwtAuthenticator.authenticate , jwtAuthenticator.isAuthenticated ,aria2Router)
 app.use('/api/fs', jwtAuthenticator.authenticate , jwtAuthenticator.isAuthenticated,filesystemRouter)
 app.use('/api/fs', jwtAuthenticator.authenticate , jwtAuthenticator.isAuthenticated ,fileTransferRouter)
+app.use('/api/video', jwtAuthenticator.authenticateQueryParam, jwtAuthenticator.isAuthenticated, streamingRouter)
 // app.use('/api/usermanagement', authenticationMiddleware, checkAdmin, userManagementRouter)
-app.get('/', (request, response)=>{
-    response.redirect('/api/login')
-})
 
 
 
-const port = process.env.NODE_ENV === 'test'? 8000 : 80
+
+const port = process.env.NODE_ENV === 'test'? 8000 : 5000
 const server = app.listen(port, '0.0.0.0', () => { console.log("Listening on port "+port+"...") })
 const io = new Server(server)
 

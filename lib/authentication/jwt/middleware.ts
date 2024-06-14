@@ -18,6 +18,7 @@ export default class JwtAuthenticator extends JwtAuthentication implements IJwtA
         this.login = this.login.bind(this)
         this.register = this.register.bind(this)
         this.authenticate = this.authenticate.bind(this)
+        this.authenticateQueryParam = this.authenticateQueryParam.bind(this)
         this.isAuthenticated = this.isAuthenticated.bind(this)
         this.authenticateSocketIo = this.authenticateSocketIo.bind(this)
     }
@@ -55,6 +56,26 @@ export default class JwtAuthenticator extends JwtAuthentication implements IJwtA
 
     public async authenticate(request: Request, response: Response, next: NextFunction): Promise<void> {
         const token = request.header("authorization")
+        try{
+            const payload = token ? await this.verifyJwt(token) : undefined
+            const user = payload ? payload : undefined
+            request.user = user
+        }
+        catch(e)
+        {
+            console.error(e)
+            return next(e)
+        }
+        return next()
+    }
+
+    public async authenticateQueryParam(request: Request, response: Response, next: NextFunction): Promise<void> {
+        const token = request.query.token
+        if(typeof token !== 'string')
+        {
+            response.status(401).send("Unauthorized!")
+            return
+        }
         try{
             const payload = token ? await this.verifyJwt(token) : undefined
             const user = payload ? payload : undefined

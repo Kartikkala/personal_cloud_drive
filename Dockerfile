@@ -16,7 +16,7 @@ RUN apt install aria2 sudo -y
 
 RUN npm ci
 
-EXPOSE 80
+EXPOSE 5000
 
 VOLUME ["./downloadables"]
 

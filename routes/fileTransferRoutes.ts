@@ -1,14 +1,11 @@
 import express from 'express'
 import { FileTransferFactory } from '../lib/fileTransfer/transfer.js'
 import busboy from 'busboy'
-import VideoStreaming from '../lib/http-streaming/streaming.js'
-import { NFileObjectManager } from '../types/lib/fileSystem/types.js'
 
 
-export default function getFileTransferRouter(fileTransfer : FileTransferFactory, fileManager : NFileObjectManager.IFileObjectManager ,maxFileTransferSpeed = 8e+7)
+export default function getFileTransferRouter(fileTransfer : FileTransferFactory ,maxFileTransferSpeed = 8e+7)
 {
     const router = express.Router()
-    const streamer = new VideoStreaming(fileManager)
 
 
     router.post("/downloadFileClient", async (request, response) => {
@@ -45,44 +42,6 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
     
         request.pipe(bb)
     })
-    
-    router.get('/stream/:filepath', async (request, response)=>{
-        const user = request.user
-        if(user)
-        {   
-            const streamObject = await streamer.stream(user.email, request.params.filepath, request.headers)
-            if(streamObject)
-            {
-                if(streamObject.start !== undefined && streamObject.end !==undefined)
-                {
-                    if(streamObject.size && streamObject.stream)
-                    {
-                        const start = streamObject.start
-                        const end = Math.min(streamObject.end, streamObject.size-1)
-                        const headers = {
-                            "Content-Range" : `bytes ${start}-${end}/${streamObject.size}`,
-                            "Accept-Ranges" : "bytes",
-                            "Content-Length" : end-start+1,
-                            "Content-Type" : "video/mp4",
-                        }
-                        response.writeHead(206, headers)
-                        streamObject.stream.pipe(response)
-                    }
-                    else{
-                        return response.status(404).send("The requested resource was not found")
-                    }
-                }
-                else{
-                    return response.status(400).send("Incorrect range headers syntax")
-                }
-            }
-            else{
-                return response.status(400).send("Range headers not present")
-            }
-        }
-        else{
-            return response.status(401).send("Unauthorized")
-        }
-    })
+
     return router
 }
