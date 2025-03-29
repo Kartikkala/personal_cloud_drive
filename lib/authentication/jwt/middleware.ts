@@ -29,7 +29,13 @@ export default class JwtAuthenticator extends JwtAuthentication implements IJwtA
         const user = await this.logIn(email, password)
         if(user.userDocument)
         {
-            const res = {success : user.success, error : user.error, token : await this.issueJwt(user.userDocument)}
+            const res = {
+                success : user.success,
+                error : user.error,token : await this.issueJwt(user.userDocument), 
+                name : user.userDocument.name, 
+                email : user.userDocument.email, 
+                admin : user.userDocument.admin
+            }
             response.status(200).json(res)
         }
         else

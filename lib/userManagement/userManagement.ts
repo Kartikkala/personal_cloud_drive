@@ -1,4 +1,4 @@
-import { userCollection } from "../db/models.mjs"
+import { userCollection } from "../db/UserManagement/models.js"
 import disk from "diskusage"
 import os from 'os'
 
@@ -23,11 +23,11 @@ async function totalUsedSpace()
     return result[0].totalUsedStorage
 }
 
-async function getTotalSpaceForUser(username)
+async function getTotalSpaceForUser(email : string)
 {
     const result = {success : false, userPresent : false, totalSpace : 0}
     try{
-        const queryResult = await userCollection.findOne({username : username}, {_id : false, totalSpace : true})
+        const queryResult = await userCollection.findOne({email : email}, {_id : false, totalSpace : true})
 
         // If response is not undefined and user is present
 

@@ -16,7 +16,7 @@
     },
     "app_configs":
     {
-        "mountPaths" : ["./downloadables"],
+        "mountPaths" : ["/home/sirkartik/Downloads/cloud"],
         "workingDir" : "CloudDrive",
         "emailServiceName" : "gmail",
         "emailServiceHostAddress" : "smtp.gmail.com",

@@ -4,6 +4,7 @@ import path, {dirname} from 'path'
 import { fileURLToPath } from 'url'
 import { Server } from 'socket.io'
 import {config} from 'dotenv'
+import cors from 'cors'
 
 
 // Import routes 
@@ -12,6 +13,7 @@ import getFileTransferRouter from './routes/fileTransferRoutes.js'
 import getAria2Router from './routes/aria2Routes.js'
 import getFileSystemRouter from './routes/filesystemRoutes.js'
 import getAuthenticationRouter from './routes/authenticationRoutes.js'
+// import {userManagementRouter} from './routes/userManagementRoutes.js'
 
 // Import objects from lib directory
 
@@ -20,6 +22,7 @@ import AuthenticationFactory from './lib/authentication/authenticator.js'
 import DatabaseFactory from './lib/db/database.js'
 import { FileObjectManagerMiddleware } from './lib/fileSystem/middlewares.js'
 import { FileTransferFactory } from './lib/fileTransfer/transfer.js'
+import Mp4Box from './lib/hls/mp4boxHelper.js'
 
 // Import configs
 
@@ -53,14 +56,14 @@ const database =  DatabaseFactory.getInstance(dbConnectionString, db_configs)
 const authenticationFactory = AuthenticationFactory.getInstance(database.getAuthenticationDatabase(), keys_configs)
 const authorizationFactory = AuthorisationMiddlewareFactory.getInstance(emailServiceName, emailServicHostAddress, emailServicePortNumber, secure, senderEmail, senderEmailPassword)
 const fileObjectManagerMiddleware = await FileObjectManagerMiddleware.getInstance(app_configs.mountPaths, database.getUserDiskStatsDatabase())
-const fileTransferFactory = await FileTransferFactory.getInstance(database.getInactiveDownloadsDatabase(), fileObjectManagerMiddleware.fileManager, aria2_configs)
+const fileTransferFactory = await FileTransferFactory.getInstance(database.getInactiveDownloadsDatabase(), fileObjectManagerMiddleware.fileManager, aria2_configs, new Mp4Box(4))
 const jwtAuthenticator = authenticationFactory.jwtAuthenticator
 
 // Router creations
 
 const authenticationRouter = getAuthenticationRouter(authenticationFactory, authorizationFactory, fileObjectManagerMiddleware)
 const filesystemRouter = getFileSystemRouter(fileObjectManagerMiddleware)
-const fileTransferRouter = getFileTransferRouter(fileTransferFactory, fileObjectManagerMiddleware.fileManager, 8e+7)
+const fileTransferRouter = getFileTransferRouter(fileTransferFactory, fileObjectManagerMiddleware.fileManager, new Mp4Box(4),8e+7)
 const aria2Router = getAria2Router(fileTransferFactory.server)
 
 // App middleware configuration
@@ -68,6 +71,7 @@ const aria2Router = getAria2Router(fileTransferFactory.server)
 app.disable('x-powered-by')
 app.use(express.json())
 app.use(express.urlencoded({extended : true}))
+app.use(cors())
 
 
 // Routes
@@ -77,16 +81,22 @@ app.use("/api", jwtAuthenticator.authenticate , jwtAuthenticator.isAuthenticated
 app.use('/api/aria', jwtAuthenticator.authenticate , jwtAuthenticator.isAuthenticated ,aria2Router)
 app.use('/api/fs', jwtAuthenticator.authenticate , jwtAuthenticator.isAuthenticated,filesystemRouter)
 app.use('/api/fs', jwtAuthenticator.authenticate , jwtAuthenticator.isAuthenticated ,fileTransferRouter)
-// app.use('/api/usermanagement', authenticationMiddleware, checkAdmin, userManagementRouter)
+// app.use('/api/usermanagement', jwtAuthenticator.authenticate, jwtAuthenticator.isAuthenticated, userManagementRouter)
 app.get('/', (request, response)=>{
     response.redirect('/api/login')
 })
 
 
 
-const port = process.env.NODE_ENV === 'test'? 8000 : 80
+const port = process.env.NODE_ENV === 'test'? 8000 : 5000
 const server = app.listen(port, '0.0.0.0', () => { console.log("Listening on port "+port+"...") })
-const io = new Server(server)
+const io = new Server(server, {
+    cors: {
+        origin: "*", // Allow frontend origin
+        methods: ["GET", "POST"], // Allowed methods
+        credentials: true, // Allow cookies and authentication headers
+      },
+})
 
 io.use(jwtAuthenticator.authenticateSocketIo)
 io.use(updateDownloadStatus(fileTransferFactory))

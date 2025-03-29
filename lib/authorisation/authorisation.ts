@@ -8,6 +8,11 @@ export default class Authorisation{
     private _emailToOtpMap : Map<string, OTPObject> = new Map<string, OTPObject>
     constructor(serviceName? : string, serviceHostAddress? : string, servicePortNumber? : number, secure? : boolean, email? : string, password? : string)
     {
+        if(!email || !password)
+        {
+            console.error("Invalid sender email address or password. Please check the environment variables.")
+            process.exit(-1)
+        }
         this.setTransporter(serviceName, serviceHostAddress, servicePortNumber, secure, email, password)
     }
     public setTransporter(serviceName? : string, serviceHostAddress? : string, servicePortNumber? : number, secure? : boolean, email? : string, password? : string) : boolean{
@@ -45,7 +50,7 @@ export default class Authorisation{
                 if(existingUser) // TODO : Talking about this
                 {
                     let nextRetryTime = (existingUser.lastRetry + (minRetryDuration * existingUser.tries))
-                    
+                    console.log(existingUser.otp)
                     if(existingUser.tries < maxTries && nextRetryTime < Date.now())
                     {
                         this._transporter.sendMail({
@@ -78,6 +83,7 @@ export default class Authorisation{
                             resolve(buff.toString('hex'))
                         })
                     })
+                    
                     this._transporter.sendMail({
                         from : {
                             name : senderName,
@@ -86,6 +92,13 @@ export default class Authorisation{
                         to : recipientEmail,
                         subject : "OTP for Personal Cloud Drive",
                         html : `Your otp for cloud drive is : <b>${otp}</b>. This otp is valid for 10 minutes!`
+                    }, (e)=>{
+                        if(e)
+                        {
+                            console.error(e)
+                            result.success = false
+                            result.error = true
+                        }
                     })
                     const userOtpObject : OTPObject = {
                         tries : 1,

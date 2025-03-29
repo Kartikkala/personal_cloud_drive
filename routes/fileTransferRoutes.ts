@@ -3,9 +3,10 @@ import { FileTransferFactory } from '../lib/fileTransfer/transfer.js'
 import busboy from 'busboy'
 import VideoStreaming from '../lib/http-streaming/streaming.js'
 import { NFileObjectManager } from '../types/lib/fileSystem/types.js'
+import Mp4Box from '../lib/hls/mp4boxHelper.js'
 
 
-export default function getFileTransferRouter(fileTransfer : FileTransferFactory, fileManager : NFileObjectManager.IFileObjectManager ,maxFileTransferSpeed = 8e+7)
+export default function getFileTransferRouter(fileTransfer : FileTransferFactory, fileManager : NFileObjectManager.IFileObjectManager,mp4box : Mp4Box ,maxFileTransferSpeed = 8e+7)
 {
     const router = express.Router()
     const streamer = new VideoStreaming(fileManager)
@@ -40,7 +41,7 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
         bb.on('file', async (name, file, info)=>{
             const { filename, encoding, mimeType } = info
             let result = await fileTransfer.client.uploadFile(email, filename, file, fileSize)
-            response.send(result)
+            return response.send(result)
         })
     
         request.pipe(bb)
@@ -49,7 +50,7 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
     router.post('/stream', async (request, response)=>{
         const user = request.user
         if(user)
-        {   
+            {   
             const streamObject = await streamer.stream(user.email, request.body.filepath, request.headers)
             if(streamObject)
             {
@@ -64,6 +65,7 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
                             "Accept-Ranges" : "bytes",
                             "Content-Length" : end-start+1,
                             "Content-Type" : "video/mp4",
+                            "Access-Control-Expose-Headers": "Content-Range, Accept-Ranges, Content-Length"
                         }
                         response.writeHead(206, headers)
                         streamObject.stream.pipe(response)

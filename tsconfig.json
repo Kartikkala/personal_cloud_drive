@@ -111,7 +111,7 @@
     "static",
     "test",
     "out",
-    "routes/userManagementRoutes.mjs",
+    "routes/userManagementRoutes.ts",
     "lib/userManagement",
     "lib/SubscriptionManagement"
   ]

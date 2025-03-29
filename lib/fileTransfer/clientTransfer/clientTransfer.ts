@@ -1,6 +1,7 @@
 import { Throttle } from 'stream-throttle'
 import { NFileObjectManager } from '../../../types/lib/fileSystem/types.js'
 import { Readable } from 'stream'
+import Mp4Box from '../../hls/mp4boxHelper.js'
 
 interface IFileUploadResult
 {
@@ -12,9 +13,11 @@ interface IFileUploadResult
 export class ClientFileTransfer
 {
     private fileManagerObject : NFileObjectManager.IFileObjectManager
-    constructor(fileManagerObject : NFileObjectManager.IFileObjectManager)
+    private mp4box
+    constructor(fileManagerObject : NFileObjectManager.IFileObjectManager, mp4box : Mp4Box)
     {
         this.fileManagerObject = fileManagerObject
+        this.mp4box = mp4box
     }
     public async downloadFile(email : string, filePath : string, downloadRate? : number) : Promise<Throttle | undefined>
     {
@@ -55,6 +58,8 @@ export class ClientFileTransfer
             if(resource)
             {
                 result.permission = true
+                const mp4boxStream = await this.mp4box.fragmentMP4(fileName, file)
+                console.log("Mp4boxstream : ", mp4boxStream)
                 await new Promise<void>((resolve, reject) =>{
                     const throttle = new Throttle({rate : uploadRate || 8e+7})
 
@@ -78,7 +83,18 @@ export class ClientFileTransfer
                         }
                         result.success = !error && !result.limitReached
                     })
-                    file.pipe(throttle).pipe(resource)
+
+                    
+                    
+                    if(mp4boxStream)
+                    {
+                        console.log('I ran')
+                        mp4boxStream.pipe(throttle).pipe(resource)
+                    }
+                    else{
+                        console.log("Else ran!")
+                        file.pipe(throttle).pipe(resource)
+                    }
                 })
             }
         }
