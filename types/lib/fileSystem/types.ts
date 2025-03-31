@@ -23,11 +23,11 @@ export namespace NFileObject {
         copy(source:ReadonlyArray<string>, destination:string)      : Promise<Array<ICopyStatus>>,
         delete(target : ReadonlyArray<string>)                      : Promise<Array<IDeleteStatus>>,
         move(source : Array<string>, destination: string)           : Promise<Array<IMoveStatus>>,
-        getUserInfo()                                               : IUserDiskStats,
-        updateUsedDiskSpace(spaceToAddInBytes : number)             : boolean,
+        getUserInfo()                                               : Promise<IUserDiskStats>,
         getCurrentUserDirSize()                                     : Promise<number>,
         getReadStream(targetPath : string, start? : number, end? : number) : Promise<ReadStream | null>,
-        getWriteStream(targetPath : string, resourceSize : number)  : Promise<WriteStream | null>
+        getWriteStream(targetPath : string, resourceSize : number)  : Promise<WriteStream | null>,
+        checkSpaceAvailaiblity(targetSpace : number) : Promise<boolean>
     }
 
     export interface IUserDiskStats{
@@ -88,10 +88,10 @@ export namespace NFileObjectManager{
         copy(email : string, source:ReadonlyArray<string>, destination:string)          : Promise<Array<NFileObject.ICopyStatus> | undefined>,
         delete(email : string, target : ReadonlyArray<string>)                          : Promise<Array<NFileObject.IDeleteStatus> | undefined>,
         move(email : string, source : Array<string>, destination: string)               : Promise<Array<NFileObject.IMoveStatus> | undefined>,
-        updateUsedDiskSpace(email : string, spaceToAddInBytes : number)                 : boolean | undefined,
         getReadStream(email : string, targetPath : string, start? : number, end? : number) : Promise<ReadStream | undefined | null>,
         getWriteStream(email : string, targetPath : string, resourceSize : number)      : Promise<WriteStream | undefined | null>,
-        getUserInfo(email : string)                                                     : NFileObject.IUserDiskStats | undefined
+        getUserInfo(email : string)                                                     : Promise<NFileObject.IUserDiskStats | undefined>,
+        checkSpaceAvailability(email :string, targetSpace : number) : Promise<boolean | undefined>
     }
 
 

@@ -83,8 +83,6 @@ export class ClientFileTransfer
                         }
                         result.success = !error && !result.limitReached
                     })
-
-                    
                     
                     if(mp4boxStream)
                     {
@@ -96,6 +94,9 @@ export class ClientFileTransfer
                         file.pipe(throttle).pipe(resource)
                     }
                 })
+            }
+            else{
+                result.limitReached = true
             }
         }
         catch(e)

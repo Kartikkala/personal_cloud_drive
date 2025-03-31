@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { response } from 'express'
 import { FileTransferFactory } from '../lib/fileTransfer/transfer.js'
 import busboy from 'busboy'
 import VideoStreaming from '../lib/http-streaming/streaming.js'
@@ -25,8 +25,10 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
         }
         return response.send("Permission denied / error / path does not exist")
     })
+
     
-    router.post("/uploadFile", async(request, response)=>{
+    router.get("/uploadFile", async(request, response)=>{
+        console.log("Upload GET route called!")
         if(!request.user)
         {
             return response.send("Unauthorized")
@@ -37,12 +39,45 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
         }
         const email = request.user.email
         const fileSize = parseInt(request.headers.filesize)
-        const bb = busboy({headers : request.headers, limits : {fileSize : fileSize}})
-        bb.on('file', async (name, file, info)=>{
-            const { filename, encoding, mimeType } = info
-            let result = await fileTransfer.client.uploadFile(email, filename, file, fileSize)
-            return response.send(result)
+        const limit = await fileManager.checkSpaceAvailability(email, fileSize)
+        return response.json({
+            limitReached : !limit
         })
+        
+    })
+
+    router.post("/uploadFile", async(request, response)=>{
+        console.log("Upload route called!")
+        if(!request.user)
+        {
+            return response.send("Unauthorized")
+        }
+        if(!request.headers.filesize || Array.isArray(request.headers.filesize))
+        {
+            return response.send('Invalid fileSize header')
+        }
+        const email = request.user.email
+        const fileSize = parseInt(request.headers.filesize)
+        console.log(fileSize)
+        if(!await fileManager.checkSpaceAvailability(email, fileSize))
+        {
+            return response.json({
+                success : false,
+                limitReached : true
+            })
+        }
+        const bb = busboy({headers : request.headers, limits : {fileSize : fileSize+1}})
+
+        bb.on("file", async (name, file, info) => {
+            const { filename } = info;
+            try {
+                const result = await fileTransfer.client.uploadFile(email, filename, file, fileSize);
+                return response.json(result)
+            } catch (err) {
+                console.error("Error in file upload:", err);
+            }
+        });
+
     
         request.pipe(bb)
     })

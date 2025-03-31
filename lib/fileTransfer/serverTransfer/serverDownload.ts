@@ -81,7 +81,7 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
         const result: IDownloadResult = { valid: false, guid: undefined, sizeLimitExceeded: false, error: false }
         try {
             let fileSize = undefined
-            const user = this.fileManager.getUserInfo(email)
+            const user = await this.fileManager.getUserInfo(email)
             if(user)
             {
                 if (uri.startsWith("magnet:")) {
@@ -95,7 +95,7 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
                     result.valid = true
                 }
                 // Check if space is available
-                if (this.fileManager.updateUsedDiskSpace(email, fileSize)) {
+                if (await this.fileManager.checkSpaceAvailability(email, fileSize)) {
                     const userDir = user.USER_HOME
                     result.guid = await this.aria2c.addUri(this.version, [uri], { dir: path.join(userDir, downloadPath) })
                     this.addUserDownload(email, result.guid)
@@ -125,7 +125,7 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
             const torrentFileObject = await this.fileManager.checkPermission(email, torrentFilePath)
 
             if (torrentFileObject) {
-                const user = this.fileManager.getUserInfo(email)
+                const user = await this.fileManager.getUserInfo(email)
                 if(user)
                 {
                     if (torrentFileObject.permission && torrentFileObject.pathExists && torrentFileObject.fileName) {
@@ -137,7 +137,7 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
                         result.valid = true
 
                         // If size of file to be downloaded is lesser than available space
-                        if (this.fileManager.updateUsedDiskSpace(email, torrentContents.length)) {
+                        if (await this.fileManager.checkSpaceAvailability(email, torrentContents.length)) {
                             // Follow the torrent file and download contents from it
                             result.guid = await this.aria2c.addTorrent(this.version, file.toString('base64'), [], { dir: fullDownloadPath })
                             this.addUserDownload(email, result.guid)

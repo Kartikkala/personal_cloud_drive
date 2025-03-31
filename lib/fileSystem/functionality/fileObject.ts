@@ -9,7 +9,6 @@ export class FileObject implements NFileObject.IFileObject{
     private userDirName :string
     private userDirMountPath: string
     private workingDir: string
-    private usedDiskSpace : number
     private HOME_DIR : string
     constructor(userDirName: string, userDirMountPath: string, workingDir: string ,totalUserSpaceInBytes: number)
     {
@@ -25,7 +24,7 @@ export class FileObject implements NFileObject.IFileObject{
         this.HOME_DIR = path.join(userDirMountPath, workingDir, userDirName)
         const pathToMount = path.join(this.userDirMountPath, this.workingDir ,this.userDirName)
         try{
-            this.usedDiskSpace = filesystem.statSync(pathToMount).size
+            filesystem.statSync(pathToMount)
         }
         catch(e)
         {
@@ -43,27 +42,27 @@ export class FileObject implements NFileObject.IFileObject{
         this.copy = this.copy.bind(this)
         this.move = this.move.bind(this)
         this.delete = this.delete.bind(this)
-        this.updateUsedDiskSpace = this.updateUsedDiskSpace.bind(this)
         this.getCurrentUserDirSize = this.getCurrentUserDirSize.bind(this)
         this.getReadStream = this.getReadStream.bind(this)
         this.getWriteStream = this.getWriteStream.bind(this)
+        this.checkSpaceAvailaiblity = this.checkSpaceAvailaiblity.bind(this)
     }
 
 
-    public getUserInfo() : NFileObject.IUserDiskStats
+    public async getUserInfo() : Promise<NFileObject.IUserDiskStats>
     {
         return {
             "USER_HOME" : this.HOME_DIR,
             "totalUserSpaceInBytes" : this.totalUserSpace, 
-            "usedSpaceInBytes" : this.usedDiskSpace
+            "usedSpaceInBytes" : await this.getCurrentUserDirSize()
         }
     }
 
-    public updateUsedDiskSpace(spaceToAddInBytes : number) : boolean
+    public async checkSpaceAvailaiblity(spaceToAddInBytes : number) : Promise<boolean>
     {
-        if(this.usedDiskSpace + spaceToAddInBytes < this.totalUserSpace)
+        const usedSpace = await this.getCurrentUserDirSize()
+        if(usedSpace + spaceToAddInBytes < this.totalUserSpace)
         {
-            this.usedDiskSpace += spaceToAddInBytes
             return true
         } 
         return false
@@ -246,7 +245,7 @@ export class FileObject implements NFileObject.IFileObject{
                     {
                         const sourceFileStats = await fs.stat(path.join(sourceObject.dirName, sourceObject.fileName))
                         const requiredSpace = sourceFileStats.size
-                        if(this.updateUsedDiskSpace(requiredSpace))
+                        if(await this.checkSpaceAvailaiblity(requiredSpace))
                         {
                             await fs.cp(path.join(sourceObject.dirName, sourceObject.fileName) ,path.join(destinationPermissionObject.dirName, sourceObject.fileName))
                         }
@@ -261,7 +260,7 @@ export class FileObject implements NFileObject.IFileObject{
                         const destinationDirectoryName = path.join(destinationPermissionObject.dirName, sourceDirectoryBaseName)
                         const sourceDirStats = await fs.stat(sourceObject.dirName)
                         const requiredSpace = sourceDirStats.size
-                        if(this.updateUsedDiskSpace(requiredSpace))
+                        if(await this.checkSpaceAvailaiblity(requiredSpace))
                         {
                             // Create a directory of the same name as source first
                             await fs.mkdir(destinationDirectoryName, {recursive : true})
@@ -277,11 +276,6 @@ export class FileObject implements NFileObject.IFileObject{
                 }
                 catch(exception)
                 {
-                    // Set the space to the size of user's directory
-                    // in case of errors in copy operation
-                    const userDirStats = await fs.stat(this.HOME_DIR)
-                    this.usedDiskSpace = userDirStats.size
-                    // Set exception to true in case of exception
                     copyStatus.exception = true
                 }
             }
@@ -314,22 +308,18 @@ export class FileObject implements NFileObject.IFileObject{
                 let deleted = false
                 if(permissionObject.permission && permissionObject.pathExists && !permissionObject.fileName)
                 {
-                    const dirSize = (await fs.stat(permissionObject.dirName)).size
                     await fs.rmdir(permissionObject.dirName, {recursive : true})
-                    deleted = this.updateUsedDiskSpace(-dirSize)
+                    deleted = true
                 }
                 else if(permissionObject.permission && permissionObject.pathExists && permissionObject.fileName)
                 {
-                    const fileSize = (await fs.stat(path.join(permissionObject.dirName, permissionObject.fileName))).size
                     await fs.rm(path.join(permissionObject.dirName, permissionObject.fileName))
-                    deleted = this.updateUsedDiskSpace(-fileSize)
+                    deleted = true
                 }
                 deleteStatus.deleted = deleted
             }
             catch(exception)
             {
-                // Recalculate used disk stats on error for safety
-                this.usedDiskSpace = (await fs.stat(this.HOME_DIR)).size
                 deleteStatus.exception = true
             }
             return deleteStatus
@@ -339,7 +329,26 @@ export class FileObject implements NFileObject.IFileObject{
 
     public async getCurrentUserDirSize() : Promise<number>
     {
-        return (await fs.stat(this.HOME_DIR)).size
+        async function getSize(directory: string): Promise<number> {
+            let totalSize = 0;
+            try {
+                const files = await fs.readdir(directory, { withFileTypes: true });
+                for (const file of files) {
+                    const filePath = path.join(directory, file.name);
+                    const stats = await fs.stat(filePath);
+                    if (stats.isDirectory()) {
+                        totalSize += await getSize(filePath); // Recursively get the size of subdirectories
+                    } else {
+                        totalSize += stats.size; // Add file size
+                    }
+                }
+            } catch (error) {
+                console.error(`Error calculating size of ${directory}:`, error);
+            }
+            return totalSize;
+        }
+        
+        return getSize(this.HOME_DIR);
     }
 
     public async move(source : Array<string>, destination: string): Promise<Array<NFileObject.IMoveStatus>>
@@ -432,18 +441,13 @@ export class FileObject implements NFileObject.IFileObject{
         const permissionObject = await this.checkPermission(targetPath, true, false)
         if(permissionObject.permission && permissionObject.fileName)
         {
-            if(this.updateUsedDiskSpace(resourceSize))
-            {
                 const writeStream = 
                 result = filesystem.createWriteStream(path.join(permissionObject.dirName, permissionObject.fileName))
                 result.on('error', async (e)=>{
-                    // Recalculate used disk stats on error for safety
-                    this.usedDiskSpace = (await fs.stat(this.HOME_DIR)).size
                     writeStream.destroy()
                     console.error(e)
                     console.error('Error in write stream')
                 })
-            }
         }
         return result
     }

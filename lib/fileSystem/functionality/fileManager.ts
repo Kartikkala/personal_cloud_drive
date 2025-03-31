@@ -48,7 +48,6 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         this.move = this.move.bind(this)
         this.delete = this.delete.bind(this)
         this.changeTotalUserSpace = this.changeTotalUserSpace.bind(this)
-        this.updateUsedDiskSpace = this.updateUsedDiskSpace.bind(this)
         this.getUserInfo = this.getUserInfo.bind(this)
     }
 
@@ -62,6 +61,16 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         console.log("\x1b[33m",'Info : Fetching filesystem stats from database for all users...', "\x1b[0m")
         this.instance.createAndMountFileObjects(userDirStats)
         return this.instance
+    }
+
+    public async checkSpaceAvailability(email :string, targetSpace : number)
+    {
+        const fileObject = this.fileObjectPool.get(email)
+        if(fileObject)
+        {
+            return await fileObject.checkSpaceAvailaiblity(targetSpace)
+        }
+        return undefined
     }
 
     public addNewMountPaths(mountPaths : Array<string>) : boolean
@@ -277,22 +286,12 @@ export class FileObjectManager implements NFileObjectManager.IFileObjectManager{
         return undefined
     }
 
-    public getUserInfo(email : string)
+    public async getUserInfo(email : string)
     {
         const fileObject = this.fileObjectPool.get(email)
         if(fileObject)
         {
-            return fileObject.getUserInfo()
-        }
-        return undefined
-    }
-
-    public updateUsedDiskSpace(email : string, spaceToAddInBytes : number) : boolean | undefined
-    {
-        const fileObject = this.fileObjectPool.get(email)
-        if(fileObject)
-        {
-            return fileObject.updateUsedDiskSpace(spaceToAddInBytes)
+            return await fileObject.getUserInfo()
         }
         return undefined
     }
