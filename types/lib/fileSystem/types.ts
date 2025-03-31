@@ -15,7 +15,7 @@ export namespace NFileObject {
     }
 
     export interface IFileObject{
-        checkPermission(targetPath : string)                        : Promise<IPermissionObject>,
+        checkPermission(targetPath : string, create? : boolean, dir? :boolean) : Promise<IPermissionObject>,
         getResourceStats(targetPath : string)                       : Promise<NFileObject.IFileStats | null>,
         getDirectoryContents(targetPath: string)                    : Promise<IContentObject>,
         getResourceStatsInDirectory(targetPath:string)              : Promise<IContentStatsObject>,

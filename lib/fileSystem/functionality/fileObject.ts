@@ -75,26 +75,66 @@ export class FileObject implements NFileObject.IFileObject{
         return updatedTotalUserSpaceInBytes
     }
     
-    public async checkPermission(targetPath : string): Promise<NFileObject.IPermissionObject>{
+    public async checkPermission(targetPath : string, create : boolean = false, dir : boolean = false): Promise<NFileObject.IPermissionObject>{
         const permissionObject: NFileObject.IPermissionObject = {'permission': false, 'exception':false, 'pathExists':true, 'dirName' : '', 'fileName' : undefined}
-        let fullPath : string
         try{
-            let requestedPath : string = path.join(this.userDirMountPath, this.workingDir ,this.userDirName ,targetPath)
-            const stat = await fs.stat(requestedPath)
-            if(stat.isDirectory())
+            let requestedPath : string = path.normalize(path.join(this.userDirMountPath, this.workingDir ,this.userDirName ,targetPath))
+            permissionObject.permission = requestedPath.startsWith(path.join(this.userDirMountPath, this.workingDir ,this.userDirName))
+            if(permissionObject.permission)
             {
-                permissionObject.dirName = requestedPath
+                let stat = undefined
+                try{
+                    stat = await fs.stat(requestedPath)
+                }
+                catch(e : any)
+                {
+                    if(e.code === 'ENOENT' && create)
+                    {
+                        if(dir)
+                        {
+                            try{
+                                await fs.mkdir(requestedPath)
+                            }
+                            catch(e)
+                            {
+                                console.error("Error creating new dir inside checkPermission()")
+                                console.error(e)
+                            }
+                        }
+                        else
+                        {
+                            try{
+                                await fs.writeFile(requestedPath, "")
+                            }
+                            catch(e)
+                            {
+                                console.error("Error while creating a new file inside checkPermisison()")
+                                console.error(e)
+                            }
+                        }
+
+                        stat = await fs.stat(requestedPath)
+                    }
+                    else
+                    {
+                        permissionObject.exception = true
+                        permissionObject.pathExists = false
+                        return permissionObject
+                    }
+                }
+                if(stat.isDirectory())
+                {
+                    permissionObject.dirName = requestedPath
+                }
+                else
+                {
+                    const pathArray : Array<string> = requestedPath.split('/')
+                    const fileName : string | undefined = pathArray.pop()
+                    permissionObject.dirName = path.dirname(requestedPath)
+                    permissionObject.fileName = fileName
+                }
+                permissionObject.pathExists = filesystem.existsSync(requestedPath)
             }
-            else
-            {
-                const pathArray : Array<string> = requestedPath.split('/')
-                const fileName : string | undefined = pathArray.pop()
-                permissionObject.dirName = path.dirname(requestedPath)
-                permissionObject.fileName = fileName
-            }
-            fullPath = path.normalize(requestedPath)
-            permissionObject.permission = fullPath.startsWith(path.join(this.userDirMountPath, this.workingDir ,this.userDirName))
-            permissionObject.pathExists = filesystem.existsSync(fullPath)
         }
         catch(exception){
             console.error("Exception occured while checking permission of requested path.")
@@ -389,7 +429,7 @@ export class FileObject implements NFileObject.IFileObject{
         // it is required that the readstream that is being piped to this writestream
         // would get intercepted by that same kind of transform stream
         let result = null
-        const permissionObject = await this.checkPermission(targetPath)
+        const permissionObject = await this.checkPermission(targetPath, true, false)
         if(permissionObject.permission && permissionObject.fileName)
         {
             if(this.updateUsedDiskSpace(resourceSize))
