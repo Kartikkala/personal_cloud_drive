@@ -22,6 +22,7 @@
     "@types/webtorrent": "^0.109.8",
     "@types/ws": "^8.5.10",
     "aria2": "^4.1.2",
+    "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "busboy": "^1.6.0",
     "connect-mongo": "^5.0.0",

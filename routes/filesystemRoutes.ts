@@ -17,24 +17,24 @@ export default function getFileSystemRouter(fileManagerMiddleware: FileObjectMan
         response.json(content)
     })
 
-    filesystemRouter.post("/copy", (request, response) => {
-        const result = response.locals.result
+    filesystemRouter.post("/copy", async (request, response) => {
+        const result = await response.locals.result
         if (!result) {
             return response.status(401).send("Unauthorized!")
         }
         return response.json(result)
     })
 
-    filesystemRouter.post("/delete", (request, response) => {
-        const result = response.locals.result
+    filesystemRouter.post("/delete", async (request, response) => {
+        const result = await response.locals.result
         if (!result) {
             return response.status(401).send("Unauthorized!")
         }
         return response.json(result)
     })
 
-    filesystemRouter.post("/move", (request, response) => {
-        const result = response.locals.result
+    filesystemRouter.post("/move", async (request, response) => {
+        const result = await response.locals.result
         if (!result) {
             return response.status(401).send("Unauthorized!")
         }

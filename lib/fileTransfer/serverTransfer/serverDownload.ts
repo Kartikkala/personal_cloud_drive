@@ -112,6 +112,7 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
             }
         }
         catch (e) {
+            console.log(e)
             result.error = true
         }
         return result

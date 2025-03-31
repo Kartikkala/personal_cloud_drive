@@ -80,7 +80,8 @@ export class FileObject implements NFileObject.IFileObject{
         let fullPath : string
         try{
             let requestedPath : string = path.join(this.userDirMountPath, this.workingDir ,this.userDirName ,targetPath)
-            if(targetPath.endsWith('/'))
+            const stat = await fs.stat(requestedPath)
+            if(stat.isDirectory())
             {
                 permissionObject.dirName = requestedPath
             }

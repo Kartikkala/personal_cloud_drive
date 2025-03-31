@@ -27,6 +27,7 @@ export default function getAria2Router(aria2Client: IAria2Helper) {
             return response.json({ "valid": false, "error": true })
         }
         const res = await aria2Client.downloadWithURI(user.email, uri, '/Downloads')
+        console.log(res)
         response.send(res)
 
 
