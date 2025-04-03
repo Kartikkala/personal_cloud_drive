@@ -8,6 +8,14 @@ export default function getFileSystemRouter(fileManagerMiddleware: FileObjectMan
     filesystemRouter.use("/delete", fileManagerMiddleware.deleteMiddleware)
     filesystemRouter.use("/move", fileManagerMiddleware.moveMiddleware)
 
+    filesystemRouter.get("/diskStats", fileManagerMiddleware.getDiskStats, (req, res)=>{
+        const stats = res.locals.result
+        if(!stats)
+        {
+            return res.status(401).send("Unauthorized!")
+        }
+        res.json(stats)
+    })
     filesystemRouter.post("/ls", (request, response) => {
         const content = response.locals.result
         if (!content) {

@@ -28,6 +28,7 @@ export class FileObjectManagerMiddleware{
         this.moveMiddleware = this.moveMiddleware.bind(this)
         this.getResourceStatsInDirectoryMiddleware = this.getResourceStatsInDirectoryMiddleware.bind(this)
         this.addNewUserMiddleware = this.addNewUserMiddleware.bind(this)
+        this.getDiskStats = this.getDiskStats.bind(this)
     }
 
     public get fileManager()
@@ -155,6 +156,25 @@ export class FileObjectManagerMiddleware{
             userCreationResult.allocatedSpace = userDiskStats.totalSpace
         }
         response.locals.userDriveDetails = userCreationResult
+        return next()
+    }
+
+    async getDiskStats(request : Request, response : Response, next : NextFunction)
+    {
+        if(!request.user)
+        {
+            return next()
+        }
+        const diskStats = await this.fileManager.getUserInfo(request.user.email)
+        if(diskStats)
+        {
+            const res = {
+                totalSpace : diskStats.totalUserSpaceInBytes,
+                usedSpace : diskStats.usedSpaceInBytes                
+            }
+            response.locals.result = res
+            return next()
+        }
         return next()
     }
 
