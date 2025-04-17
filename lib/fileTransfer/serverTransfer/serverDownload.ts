@@ -133,7 +133,7 @@ class Aria2Helper extends EventEmitter implements IAria2Helper {
                         const userDir = user.USER_HOME
                         const fullDownloadPath = path.join(userDir, downloadPath)
                         const file = await fs.readFile(path.join(torrentFileObject.dirName, torrentFileObject.fileName))
-                        const torrentContents = files(file)
+                        const torrentContents = files(Uint8Array.from(file))
                         result.valid = true
 
                         // If size of file to be downloaded is lesser than available space

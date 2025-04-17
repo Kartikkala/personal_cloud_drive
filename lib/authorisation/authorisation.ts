@@ -50,7 +50,7 @@ export default class Authorisation{
                 if(existingUser) // TODO : Talking about this
                 {
                     let nextRetryTime = (existingUser.lastRetry + (minRetryDuration * existingUser.tries))
-                    console.log(existingUser.otp)
+                    console.log("User already exists!")
                     if(existingUser.tries < maxTries && nextRetryTime < Date.now())
                     {
                         this._transporter.sendMail({

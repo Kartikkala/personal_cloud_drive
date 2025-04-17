@@ -5,7 +5,7 @@
   "description": "This is the first package I am creating using npm init and express js",
   "main": "app.js",
   "scripts": {
-    "start": "tsc && NODE_ENV=deployment MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING sudo node out/app.js",
+    "start": "tsc && NODE_ENV=deployment MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING node out/app.js",
     "test": ". '/etc/environment' && JUNIT_REPORT_PATH=/report.xml NODE_ENV=test MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING mocha --exit --colors --reporter mocha-jenkins-reporter 'test/*.spec.js'"
   },
   "author": "KartikKala",
