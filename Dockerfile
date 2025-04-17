@@ -1,19 +1,33 @@
-FROM node:16
+FROM archlinux
 
-RUN apt update
+RUN pacman -Syu aria2 nvm zsh python base-devel gpac --noconfirm
 
-RUN apt upgrade -y
+RUN mkdir /home/sirkartik && mkdir /home/sirkartik/Downloads && mkdir /home/sirkartik/Downloads/cloud
 
-COPY . .
+SHELL ["/bin/zsh", "-c"]
 
-RUN chmod +x start.sh
+RUN source /usr/share/nvm/init-nvm.sh && nvm install 21
 
-RUN apt install aria2 sudo -y
+ARG MONGO_CONNECTION_STRING
 
-RUN npm ci
+ARG USER_EMAIL_ADDRESS
 
-EXPOSE 80
+ARG USER_EMAIL_PASSWORD
 
-VOLUME ["./downloadables"]
+ENV MONGO_CONNECTION_STRING=${MONGO_CONNECTION_STRING}
 
-CMD ["./start.sh"]
+ENV USER_EMAIL_ADDRESS=${USER_EMAIL_ADDRESS}
+
+ENV USER_EMAIL_PASSWORD=${USER_EMAIL_PASSWORD}
+
+COPY . /home
+
+RUN chmod +x home/start.sh
+
+RUN source /usr/share/nvm/init-nvm.sh && cd /home && nvm use 21 && npm ci
+
+EXPOSE 5000
+
+VOLUME ["/home/sirkartik/Downloads/cloud"]
+
+CMD ["/home/start.sh"]

@@ -1,2 +1,5 @@
 downloadables/
 node_modules/
+keys/
+.env
+out/

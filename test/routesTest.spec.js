@@ -2,13 +2,24 @@ import { expect } from "chai"
 import chai from "chai"
 import chaiHttp from "chai-http"
 import {disconnectAria2, stopServer} from './teardown.js'
-import {app, server, aria2c} from '../app.js'
+import {app, server} from '../app.js'
+import { aria2c } from "../routes/aria2Routes.mjs"
+import { fileObject } from "../routes/filesystemRoutes.mjs"
+import { mongodb } from "../lib/db/db.mjs"
+
+const postRequestObj = {"uri":"http://139.59.77.129:9000/downloadFileClient/test.jar"}
+const testDirPath = "/"
+const testFilePath = "/test.jar"
+postRequestObj[fileObject.filePathField()] = testDirPath
 
 after(async ()=>{
     try{
         await stopServer(server)
         console.log("Server stopped!!!")
         await disconnectAria2(aria2c)
+        console.log("Aria2 disconnected!!!")
+        await mongodb.close()
+        console.log("Disconnected from mongodb!!!")
     }
     catch(err){
         console.error(err)
@@ -34,9 +45,10 @@ describe('Test routes', function (){
         })
     })
 
-    it('Test route /downloads', function(done){
+    it('Test route /fs/ls', function(done){
         chai.request(app)
-        .get('/downloads')
+        .post('/fs/ls')
+        .send(postRequestObj)
         .end(function (err, res){
             if(err)
             {
@@ -51,13 +63,11 @@ describe('Test routes', function (){
         })
     })
 
-    it('Test route /downloadFileServer', function(done){
+    it('Test route /aria/downloadFileServer', function(done){
+        console.log(postRequestObj)
         chai.request(app)
-        .post('/downloadFileServer')
-        .send({
-            "uri":"http://139.59.77.129:9000/downloadFileClient/test.jar"
-        }
-        )
+        .post('/aria/downloadFileServer')
+        .send(postRequestObj)
         .end(function (err, res){
             if(err){
                 done(err)
@@ -71,9 +81,15 @@ describe('Test routes', function (){
         })
     }).timeout(8000)
 
-    it('Test route /downloadFileClient', function(done){
+    it('Test route /fs/downloadFileClient', function(done){
+
+        // Change the path to a file instead of a directory
+
+        postRequestObj[fileObject.filePathField()] = testFilePath
+
         chai.request(app)
-        .get('/downloadFileClient/testis.jar')
+        .post('/fs/downloadFileClient')
+        .send(postRequestObj)
         .end(function (err, res){
             if(err){
                 done(err)

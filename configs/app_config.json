@@ -1,0 +1,32 @@
+{
+    "aria2_configs": 
+    {
+        "host" : "localhost",
+        "port": 6800,
+        "path": "/jsonrpc",
+        "downloadStatusUpdateDurationInSeconds" : 3
+    },
+    "db_configs":
+    {
+        "user_auth_db_name" : "personal_drive",
+        "user_auth_db_collection_name" : "users",
+        "user_inactive_downloads_collection_name" : "inactive_downloads",
+        "connection_timeout_ms" : 5000,
+        "number_of_salt_rounds" : 12
+    },
+    "app_configs":
+    {
+        "mountPaths" : ["/home/sirkartik/Downloads/cloud"],
+        "workingDir" : "CloudDrive",
+        "emailServiceName" : "gmail",
+        "emailServiceHostAddress" : "smtp.gmail.com",
+        "emailServicePort" : 587,
+        "emailServiceSSLEnable" : false
+    },
+    "keys_configuration":
+    {
+        "keypair_directory" : "./keys",
+        "publickey_filename" : "id_rsa_pub.pem",
+        "privatekey_filename" : "id_rsa_priv.pem"
+    }
+}

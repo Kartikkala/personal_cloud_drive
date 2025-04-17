@@ -43,7 +43,7 @@ pipeline{
                     env.VERSION = version
                     println(version)
                     withDockerRegistry([credentialsId: 'dockerhub-creds', url: ""]){
-                        def dockerImage = docker.build("kartikkala/mirror_website")
+                        def dockerImage = docker.build("kartikkala/mirror_website", "--build-arg MONGO_CONNECTION_STRING=$MONGO_CONNECTION_STRING -f Dockerfile .")
                         dockerImage.push("$version-test")
                     }
                 }
