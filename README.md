@@ -4,8 +4,6 @@ A self-hosted personal cloud storage solution that lets you **download, store, a
 
 ### 🔧 Built with Node.js · React · Docker · FFmpeg · Aria2 · Linux
 
----
-
 ## 📌 Overview
 
 Personal Cloud Drive allows you to manage, store, and stream files directly from your own infrastructure. Think of it as your **self-owned Google Drive alternative**, with complete control and extensibility.
@@ -19,7 +17,6 @@ Core capabilities include:
 
 > ⚠️ This project is under active development. **Video streaming is being implemented**. All other major features are functional and stable.
 
----
 
 ## 🛠️ Features
 
@@ -43,7 +40,6 @@ Core capabilities include:
 - **Containerization**: Docker
 - **Platform**: Linux (tested on Arch, Ubuntu)
 
----
 
 ## 🚧 Current Development Focus
 
@@ -52,7 +48,6 @@ I'm actively working on implementing a **robust video streaming module**, which 
 - Integrating **FFmpeg** for fragmented MP4 or adaptive bitrate options
 - Ensuring cross-platform video playback without full downloads
 
----
 
 ## 🚀 Getting Started
 
@@ -76,7 +71,6 @@ docker run -p 80:80 -d --mount type=bind,src=/your/files,dst=/downloadables kart
 
 Want to improve the project or add new features? Feel free to open an issue or submit a pull request. Contributions are welcome!
 
----
 
 ## Contact
 
