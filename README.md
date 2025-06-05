@@ -45,16 +45,6 @@ Core capabilities include:
 
 ---
 
-## 🖼️ Screenshots
-
-<!-- Replace these with actual images stored in /assets or external URLs -->
-
-| File Explorer UI | Video Player (WIP) |
-|------------------|---------------------|
-| ![explorer](assets/explorer.png) | ![player](assets/player.png) |
-
----
-
 ## 🚧 Current Development Focus
 
 I'm actively working on implementing a **robust video streaming module**, which includes:
@@ -90,3 +80,6 @@ Want to improve the project or add new features? Feel free to open an issue or s
 
 ## Contact
 
+[![Twitter/X](https://img.shields.io/badge/X-%231DA1F2.svg?style=for-the-badge&logo=x&logoColor=white)](https://twitter.com/KARTIKKALA10)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kartikkala/)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:kartikkala10december@gmail.com)
