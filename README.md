@@ -1,41 +1,92 @@
-# 🖼️ Personal Cloud Drive
+# ☁️ Personal Cloud Drive
 
-This app is used for creating personal cloud storage on either a VPC a personal computer. The app uses aria2 API for downloading files onto server and host them directly from there. Option for connecting to google drive is also available. Streaming options are also available for videos, so that you could download videos onto server and stream them anywhere, anytime, without downloading. This project is currently not completed and can just host the files, which are already present on the server. Other features are also yet to come...
+A self-hosted personal cloud storage solution that lets you **download, store, and stream files** directly on your server or PC — no reliance on third-party cloud providers.
+
+### 🔧 Built with Node.js · React · Docker · FFmpeg · Aria2 · Linux
+
+---
+
+## 📌 Overview
+
+Personal Cloud Drive allows you to manage, store, and stream files directly from your own infrastructure. Think of it as your **self-owned Google Drive alternative**, with complete control and extensibility.
+
+Core capabilities include:
+- Hosting and browsing files from a mounted volume
+- Secure authentication
+- Downloading files from external links (via aria2)
+- Streaming video files (WIP)
+- Downloading files from server to client
+
+> ⚠️ This project is under active development. **Video streaming is being implemented**. All other major features are functional and stable.
+
+---
+
+## 🛠️ Features
+
+| Feature | Status |
+|--------|--------|
+| 📁 File Hosting via Mounted Volume | ✅ Complete |
+| 🔐 User Authentication (Login System) | ✅ Complete |
+| ⬇️ Download Files from Server to Client | ✅ Complete |
+| 🌐 Download Files via URL/aria2 API | ✅ Complete |
+| 🎞️ Video Streaming with FFmpeg + Range Requests | 🏗️ In Progress |
+| 🐳 Docker Support (Custom + Prebuilt Images) | ✅ Complete |
+
+---
+
+## 🧱 Tech Stack
+
+- **Frontend**: React.js
+- **Backend**: Node.js, Express
+- **Downloader**: aria2c via RPC interface
+- **Streaming**: FFmpeg + HTTP Range Support (in development)
+- **Containerization**: Docker
+- **Platform**: Linux (tested on Arch, Ubuntu)
+
+---
+
+## 🖼️ Screenshots
+
+<!-- Replace these with actual images stored in /assets or external URLs -->
+
+| File Explorer UI | Video Player (WIP) |
+|------------------|---------------------|
+| ![explorer](assets/explorer.png) | ![player](assets/player.png) |
+
+---
+
+## 🚧 Current Development Focus
+
+I'm actively working on implementing a **robust video streaming module**, which includes:
+- Serving large video files using HTTP **range requests**
+- Integrating **FFmpeg** for fragmented MP4 or adaptive bitrate options
+- Ensuring cross-platform video playback without full downloads
+
+---
 
 ## 🚀 Getting Started
 
-### First way - By cloning repository and building docker image
+### Option 1: Clone & Build Docker Image
 
-To get started with the project, follow these steps:
+```bash
+git clone https://github.com/Kartikkala/personal_cloud_drive.git
+cd personal_cloud_drive
+docker build -t personal_cloud_drive .
+docker run -p 80:80 -d --mount type=bind,src=/your/files,dst=/downloadables personal_cloud_drive
+```
 
-1. Clone the repository: `git clone https://github.com/Kartikkala/personal_cloud_drive.git`
-2. Install Docker on your machine if you haven't already: https://www.docker.com/get-started
-3. Navigate to the project directory: `cd personal_cloud_drive`
-4. Run `docker build -t <image_name> . --no-cache` command to build the image with your preffered `image_name`.
-5. Run `docker run -p 80:80 -d --mount type=bind,src=path/to/volume,dst=/downloadables <image_name>` with root previliges (if using linux) where `path/to/volume` is the path from which all the files (videos, pictures or other files ) will be hosted on the website. .
-6. If you are doing this locally, then open localhost in your browser or.
-7. If you are using any remote server, then type server IP in your browser.
-8. The files present in the `path/to/volume` must be shown in the browser.
+### Option 2: Using a prebuilt docker image
 
-### Second way - By directly downloading prebuilt docker images
+```bash
+docker pull kartikkala/personal_cloud_drive
+docker run -p 80:80 -d --mount type=bind,src=/your/files,dst=/downloadables kartikkala/personal_cloud_drive
+```
 
-Prebuilt docker images are also available for this project, you can directly download them instead of cloning the repo and run them. To do this, follow these steps:
+## Contribute
 
-1. Install docker on your machine.
-2. Pull the docker image using this command - `docker pull kartikkala/personal_cloud_drive`.
-3. Run the image using - `docker run -p 80:80 -d --mount type=bind,src=path/to/volume,dst=/downloadables kartikkala/mirror_website:latest`, where `path/to/volume` is the path from which all the files (videos, pictures or other files ) will be hosted on the website. 
-4. The files present in the `path/to/volume` must be shown in the browser.
+Want to improve the project or add new features? Feel free to open an issue or submit a pull request. Contributions are welcome!
 
+---
 
-## 🤝 Contributions
+## Contact
 
-Contributions are welcome! If you find a bug or want to add a new feature, feel free to create a pull request.
-
-
-## 📧 Contact
-
-[![LinkedIn](https://img.shields.io/badge/-LinkedIn-0077B5?style=for-the-badge&logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/kartik-kala-90aa6b235)
-[![Twitter](https://img.shields.io/badge/-Twitter-1DA1F2?style=for-the-badge&logo=Twitter&logoColor=white)](https://twitter.com/KARTIKKALA10)
-[![Gmail](https://img.shields.io/badge/-Gmail-D14836?style=for-the-badge&logo=Gmail&logoColor=white)](mailto:kartikkala10december@gmail.com)
-[![Telegram](https://img.shields.io/badge/-Telegram-2CA5E0?style=for-the-badge&logo=Telegram&logoColor=white)](https://telegram.me/Kartikkala)
- 
