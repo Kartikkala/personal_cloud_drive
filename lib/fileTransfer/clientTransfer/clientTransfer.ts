@@ -1,7 +1,7 @@
 import { Throttle } from 'stream-throttle'
 import { NFileObjectManager } from '../../../types/lib/fileSystem/types.js'
 import { Readable } from 'stream'
-import Mp4Box from '../../hls/mp4boxHelper.js'
+import FfmpegHelper from '../../utils/ffmpegHelper.js'
 
 interface IFileUploadResult
 {
@@ -13,11 +13,11 @@ interface IFileUploadResult
 export class ClientFileTransfer
 {
     private fileManagerObject : NFileObjectManager.IFileObjectManager
-    private mp4box
-    constructor(fileManagerObject : NFileObjectManager.IFileObjectManager, mp4box : Mp4Box)
+    private ffmpeg
+    constructor(fileManagerObject : NFileObjectManager.IFileObjectManager, ffmpeg : FfmpegHelper)
     {
         this.fileManagerObject = fileManagerObject
-        this.mp4box = mp4box
+        this.ffmpeg = ffmpeg
     }
     public async downloadFile(email : string, filePath : string, downloadRate? : number) : Promise<Throttle | undefined>
     {
@@ -58,8 +58,6 @@ export class ClientFileTransfer
             if(resource)
             {
                 result.permission = true
-                const mp4boxStream = await this.mp4box.fragmentMP4(fileName, file)
-                console.log("Mp4boxstream : ", mp4boxStream)
                 await new Promise<void>((resolve, reject) =>{
                     const throttle = new Throttle({rate : uploadRate || 8e+7})
 
@@ -72,27 +70,32 @@ export class ClientFileTransfer
                         console.error(e)
                         reject()
                     })
-                    file.on("end", ()=>{
-                        if(file.truncated)
+                    file.on("end", async ()=>{
+                        if(!file.truncated)
                         {
-                            result.limitReached = true
+                            try{
+                                await this.ffmpeg.makeStreamable(email, fileName);
+                            }
+                            catch(e : any)
+                            {
+                                if(e.message === "INVALID_FILE_TYPE")
+                                {
+                                    console.log("Skipping ffmpeg...")
+                                    resolve()
+                                }
+                                else{
+                                    console.log(e)
+                                }
+                            }
                             resolve()
                         }
                         else{
+                            result.limitReached = true
                             resolve()
                         }
                         result.success = !error && !result.limitReached
                     })
-                    
-                    if(mp4boxStream)
-                    {
-                        console.log('I ran')
-                        mp4boxStream.pipe(throttle).pipe(resource)
-                    }
-                    else{
-                        console.log("Else ran!")
-                        file.pipe(throttle).pipe(resource)
-                    }
+                    file.pipe(throttle).pipe(resource)
                 })
             }
             else{
