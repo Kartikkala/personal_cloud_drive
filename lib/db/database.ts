@@ -27,7 +27,7 @@ export default class DatabaseFactory{
         if(!dbConnectionString || !dbName)
         {
             // TODO : Use proper colours and logs to output info in logs
-            throw new Error("Invalid database configs")
+            throw new Error("Invalid database configs! Please set MONGO_CONNECTION_STRING environment variable in the running shell!")
         }
         this.database = new Database(dbName, dbConnectionString, connectionTimeoutDurationMs)
         this.AuthenticationDatabase = new AuthenticationDatabase(this.database, userCollectionName, saltRounds)

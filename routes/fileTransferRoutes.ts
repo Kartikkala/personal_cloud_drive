@@ -3,10 +3,9 @@ import { FileTransferFactory } from '../lib/fileTransfer/transfer.js'
 import busboy from 'busboy'
 import VideoStreaming from '../lib/http-streaming/streaming.js'
 import { NFileObjectManager } from '../types/lib/fileSystem/types.js'
-import Mp4Box from '../lib/hls/mp4boxHelper.js'
 
 
-export default function getFileTransferRouter(fileTransfer : FileTransferFactory, fileManager : NFileObjectManager.IFileObjectManager,mp4box : Mp4Box ,maxFileTransferSpeed = 8e+7)
+export default function getFileTransferRouter(fileTransfer : FileTransferFactory, fileManager : NFileObjectManager.IFileObjectManager,maxFileTransferSpeed = 8e+7)
 {
     const router = express.Router()
     const streamer = new VideoStreaming(fileManager)
@@ -28,7 +27,6 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
 
     
     router.get("/uploadFile", async(request, response)=>{
-        console.log("Upload GET route called!")
         if(!request.user)
         {
             return response.send("Unauthorized")
@@ -47,7 +45,6 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
     })
 
     router.post("/uploadFile", async(request, response)=>{
-        console.log("Upload route called!")
         if(!request.user)
         {
             return response.send("Unauthorized")
@@ -58,7 +55,6 @@ export default function getFileTransferRouter(fileTransfer : FileTransferFactory
         }
         const email = request.user.email
         const fileSize = parseInt(request.headers.filesize)
-        console.log(fileSize)
         if(!await fileManager.checkSpaceAvailability(email, fileSize))
         {
             return response.json({

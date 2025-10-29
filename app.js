@@ -22,7 +22,7 @@ import AuthenticationFactory from './lib/authentication/authenticator.js'
 import DatabaseFactory from './lib/db/database.js'
 import { FileObjectManagerMiddleware } from './lib/fileSystem/middlewares.js'
 import { FileTransferFactory } from './lib/fileTransfer/transfer.js'
-import Mp4Box from './lib/hls/mp4boxHelper.js'
+import FfmpegHelper from './lib/utils/ffmpegHelper.js'
 
 // Import configs
 
@@ -56,14 +56,14 @@ const database =  DatabaseFactory.getInstance(dbConnectionString, db_configs)
 const authenticationFactory = AuthenticationFactory.getInstance(database.getAuthenticationDatabase(), keys_configs)
 const authorizationFactory = AuthorisationMiddlewareFactory.getInstance(emailServiceName, emailServicHostAddress, emailServicePortNumber, secure, senderEmail, senderEmailPassword)
 const fileObjectManagerMiddleware = await FileObjectManagerMiddleware.getInstance(app_configs.mountPaths, database.getUserDiskStatsDatabase())
-const fileTransferFactory = await FileTransferFactory.getInstance(database.getInactiveDownloadsDatabase(), fileObjectManagerMiddleware.fileManager, aria2_configs, new Mp4Box(4))
+const fileTransferFactory = await FileTransferFactory.getInstance(database.getInactiveDownloadsDatabase(), fileObjectManagerMiddleware.fileManager, aria2_configs, new FfmpegHelper(fileObjectManagerMiddleware.fileManager))
 const jwtAuthenticator = authenticationFactory.jwtAuthenticator
 
 // Router creations
 
 const authenticationRouter = getAuthenticationRouter(authenticationFactory, authorizationFactory, fileObjectManagerMiddleware)
 const filesystemRouter = getFileSystemRouter(fileObjectManagerMiddleware)
-const fileTransferRouter = getFileTransferRouter(fileTransferFactory, fileObjectManagerMiddleware.fileManager, new Mp4Box(4),8e+7)
+const fileTransferRouter = getFileTransferRouter(fileTransferFactory, fileObjectManagerMiddleware.fileManager,8e+7)
 const aria2Router = getAria2Router(fileTransferFactory.server)
 
 // App middleware configuration
