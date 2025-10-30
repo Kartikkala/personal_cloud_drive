@@ -20,7 +20,7 @@
         "workingDir" : "CloudDrive",
         "emailServiceName" : "gmail",
         "emailServiceHostAddress" : "smtp.gmail.com",
-        "emailServicePort" : 587,
+        "emailServicePort" : 465,
         "emailServiceSSLEnable" : false
     },
     "keys_configuration":
